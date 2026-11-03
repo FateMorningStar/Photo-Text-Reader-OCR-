@@ -194,13 +194,8 @@ extractButton.addEventListener("click", async function () {
         return;
     }
 
-    const layoutMode = chooseLayoutMode();
-
-    if (layoutMode === null) {
-        statusMessage.textContent =
-            "Text extraction cancelled.";
-        return;
-    }
+    const layoutMode =
+    document.getElementById("layoutMode").value;
 
     extractButton.disabled = true;
 
