@@ -409,3 +409,94 @@ footer {
         flex: 1;
     }
 }
+
+
+/* Math Formula Recognition fixes */
+
+.math-section {
+    grid-column: 1 / -1;
+    height: auto;
+    min-height: 0;
+    margin-top: 0;
+    align-self: start;
+}
+
+.math-section p {
+    line-height: 1.5;
+}
+
+/* Uploaded formula preview */
+#mathImagePreview {
+    display: block;
+    width: 100%;
+    max-height: 320px;
+    height: auto;
+    object-fit: contain;
+    object-position: center;
+    margin: 16px 0;
+    border-radius: 8px;
+    background: #f5f9fc;
+}
+
+/* Crop workspace */
+#cropArea {
+    margin-top: 16px;
+    padding: 14px;
+    border: 1px solid #d4e2ed;
+    border-radius: 10px;
+    background: #f5f9fc;
+}
+
+#cropCanvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 500px;
+    object-fit: contain;
+    touch-action: none;
+    cursor: crosshair;
+    border-radius: 6px;
+}
+
+/* Cropped formula result */
+#croppedCanvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+    margin: 12px 0 20px;
+    border: 1px solid #d4e2ed;
+    border-radius: 8px;
+    background: #fff;
+}
+
+/* Keep hidden crop area hidden */
+#cropArea[hidden] {
+    display: none !important;
+}
+
+/* Clearer button states */
+button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* Reduce excess space on smaller screens */
+@media (max-width: 700px) {
+    .math-section {
+        padding: 18px;
+    }
+
+    #mathImagePreview {
+        max-height: 240px;
+    }
+
+    #cropCanvas {
+        max-height: 350px;
+    }
+
+    #croppedCanvas {
+        max-height: 220px;
+    }
+}
