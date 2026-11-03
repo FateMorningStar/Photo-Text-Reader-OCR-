@@ -18,174 +18,72 @@
     <main class="container">
 
         <!-- IMAGE UPLOAD SECTION -->
-        <section class="upload-section">
-            <h2>Upload an Image</h2>
+<section class="upload-section">
+    <h2>Upload an Image</h2>
 
-            <label for="imageInput" class="upload-box">
-                <span class="upload-icon">+</span>
-                <span>Choose an image</span>
-                <small>JPG, PNG, or JPEG</small>
-            </label>
+<label for="imageInput" class="upload-box">
+    <span class="upload-icon">+</span>
+    <span>Choose an image</span>
+    <small>JPG, PNG, or JPEG</small>
+        </label>
 
-            <input
-                type="file"
-                id="imageInput"
-                accept="image/png, image/jpeg"
-                hidden
-            >
+<input type="file"
+         id="imageInput"
+     accept="image/png, image/jpeg" hidden>
 
-            <div class="preview-container">
-                <img
-                    id="imagePreview"
-                    alt="Uploaded image preview"
-                    hidden
-                >
+<div class="preview-container">
+<img id="imagePreview"
+    alt="Uploaded image preview" hidden>
             </div>
 
-            <div class="rotation-buttons">
-                <button type="button" onclick="rotateImage(-90)">
-                    Rotate Left
+<div class="rotation-buttons">
+    <button type="button" onclick="rotateImage(-90)"> Rotate Left
                 </button>
 
-                <button type="button" onclick="rotateImage(90)">
-                    Rotate Right
+    <button type="button" onclick="rotateImage(90)"> Rotate Right
                 </button>
             </div>
 
-            <button id="extractButton" disabled>
-                Extract Text
+    <button id="extractButton" disabled> Extract Text
             </button>
         </section>
-
 
         <!-- EXTRACTED TEXT SECTION -->
         <section class="result-section">
             <h2>Extracted Text</h2>
 
-            <textarea
-                id="textOutput"
-                placeholder="Your extracted text will appear here..."
-            ></textarea>
+<textarea id="textOutput" placeholder="Your extracted text will appear here...">    
+</textarea>
 
-            <div class="ocr-settings">
-                <label for="layoutMode">OCR Layout Mode</label>
+<div class="ocr-settings">
+    <label for="layoutMode">OCR Layout Mode</label>
 
-                <select id="layoutMode">
-                    <option value="3">Automatic page layout</option>
-                    <option value="6">Single text block</option>
-                    <option value="4">Single text column</option>
-                    <option value="11">Sparse / scattered text</option>
-                </select>
+      <select id="layoutMode">
+        <option value="3">Automatic page layout</option>
+        <option value="6">Single text block</option>
+        <option value="4">Single text column</option>
+        <option value="11">Sparse / scattered text</option>
+       </select>
             </div>
 
-            <div class="result-buttons">
-                <button id="copyButton" type="button">
-                    Copy Text
+<div class="result-buttons">
+    <button id="copyButton" type="button"> Copy Text
                 </button>
 
-                <button id="downloadButton" type="button">
-                    Download TXT
+    <button id="downloadButton" type="button"> Download TXT
                 </button>
 
-                <button id="clearButton" type="button">
-                    Clear
+    <button id="clearButton" type="button"> Clear
                 </button>
             </div>
 
-            <p id="statusMessage">
-                Upload an image to get started.
-            </p>
+<p id="statusMessage"> Upload an image to get started.</p>
         </section>
-
-
-        <!-- MATH FORMULA CROPPING SECTION -->
-        <section class="math-section">
-            <h2>Math Formula Recognition</h2>
-
-            <p>
-                Upload an image, then crop one formula or
-                mathematical expression for recognition.
-            </p>
-
-            <label for="mathImageInput" class="upload-box">
-                <span class="upload-icon">+</span>
-                <span>Choose a formula image</span>
-                <small>PNG or JPG</small>
-            </label>
-
-            <input
-                type="file"
-                id="mathImageInput"
-                accept="image/png, image/jpeg"
-                hidden
-            >
-
-            <div class="math-preview-container">
-                <img
-                    id="mathImagePreview"
-                    alt="Formula image preview"
-                    hidden
-                >
-            </div>
-
-            <button
-                id="startCropButton"
-                type="button"
-                disabled
-            >
-                Start Cropping
-            </button>
-
-            <div id="cropArea" hidden>
-                <canvas id="cropCanvas"></canvas>
-
-                <div class="crop-buttons">
-                    <button id="cropButton" type="button">
-                        Crop Formula
-                    </button>
-
-                    <button id="cancelCropButton" type="button">
-                        Cancel
-                    </button>
-                </div>
-            </div>
-
-            <h3>Cropped Formula</h3>
-
-            <div class="cropped-preview-container">
-                <canvas id="croppedCanvas"></canvas>
-            </div>
-
-            <label for="latexOutput">
-                Editable LaTeX Output
-            </label>
-
-            <textarea
-                id="latexOutput"
-                placeholder="Math OCR output will appear here..."
-            ></textarea>
-
-            <div class="result-buttons">
-                <button id="copyLatexButton" type="button">
-                    Copy LaTeX
-                </button>
-
-                <button id="clearMathButton" type="button">
-                    Clear Formula
-                </button>
-            </div>
-
-            <p id="mathStatus">
-                Choose a formula image to get started.
-            </p>
-        </section>
-
     </main>
 
     <footer>
         <p>Photo Text Reader | Multimedia Project</p>
     </footer>
-
     <!-- TESSERACT OCR LIBRARY -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
