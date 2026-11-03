@@ -135,6 +135,13 @@ button:disabled {
     margin-top: 18px;
 }
 
+.rotation-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
 /* The Text output */
 #textOutput {
     width: 100%;
