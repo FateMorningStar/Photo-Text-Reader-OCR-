@@ -277,3 +277,95 @@ clearButton.addEventListener("click", function () {
     statusMessage.textContent =
         "Upload an image to get started.";
 });
+
+// MATH FORMULA PANEL
+const mathImageInput =
+    document.getElementById("mathImageInput");
+
+const mathImagePreview =
+    document.getElementById("mathImagePreview");
+
+const latexOutput =
+    document.getElementById("latexOutput");
+
+const copyLatexButton =
+    document.getElementById("copyLatexButton");
+
+const clearMathButton =
+    document.getElementById("clearMathButton");
+
+const mathStatus =
+    document.getElementById("mathStatus");
+
+let mathImageURL = null;
+
+// Select formula image
+mathImageInput.addEventListener("change", function () {
+    const file = mathImageInput.files[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+        mathStatus.textContent =
+            "Please select a valid image.";
+
+        mathImageInput.value = "";
+        return;
+    }
+
+    if (mathImageURL) {
+        URL.revokeObjectURL(mathImageURL);
+    }
+
+    mathImageURL = URL.createObjectURL(file);
+
+    mathImagePreview.src = mathImageURL;
+    mathImagePreview.hidden = false;
+
+    latexOutput.value = "";
+
+    mathStatus.textContent =
+        "Formula image selected. Automatic recognition will be connected next.";
+});
+
+// Copy LaTeX
+copyLatexButton.addEventListener("click", async function () {
+    const latex = latexOutput.value.trim();
+
+    if (!latex) {
+        mathStatus.textContent =
+            "There is no LaTeX text to copy.";
+        return;
+    }
+
+    try {
+        await navigator.clipboard.writeText(latex);
+
+        mathStatus.textContent =
+            "LaTeX copied to clipboard.";
+
+    } catch (error) {
+        latexOutput.focus();
+        latexOutput.select();
+
+        mathStatus.textContent =
+            "LaTeX selected. Copy it manually.";
+    }
+});
+
+// Clear formula panel
+clearMathButton.addEventListener("click", function () {
+    mathImageInput.value = "";
+    latexOutput.value = "";
+
+    if (mathImageURL) {
+        URL.revokeObjectURL(mathImageURL);
+        mathImageURL = null;
+    }
+
+    mathImagePreview.src = "";
+    mathImagePreview.hidden = true;
+
+    mathStatus.textContent =
+        "Choose a formula image to get started.";
+});
