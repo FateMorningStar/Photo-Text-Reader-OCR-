@@ -280,3 +280,132 @@ footer {
     color: #2463a6;
     font-size: 14px;
 }
+
+/* Math formula recognition */
+.math-section {
+    grid-column: 1 / -1;
+    margin-top: 0;
+}
+
+.math-section h2 {
+    color: #2463a6;
+    margin-bottom: 14px;
+    font-size: 1.3rem;
+}
+
+.math-section h3 {
+    color: #2463a6;
+    margin: 20px 0 10px;
+    font-size: 1.1rem;
+}
+
+.math-section p {
+    margin-bottom: 14px;
+    color: #6b7c8f;
+}
+
+.math-section label {
+    display: block;
+    margin: 12px 0 6px;
+    color: #2463a6;
+    font-weight: bold;
+}
+
+/* Formula image preview */
+.math-preview-container,
+.cropped-preview-container {
+    margin: 18px 0;
+    text-align: center;
+}
+
+#mathImagePreview {
+    display: block;
+    max-width: 100%;
+    max-height: 350px;
+    margin: 0 auto;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+/* Cropping workspace */
+#cropArea {
+    margin-top: 18px;
+    padding: 12px;
+    border: 1px solid #cbd5df;
+    border-radius: 8px;
+    background: #f7fbff;
+}
+
+#cropCanvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    touch-action: none;
+    cursor: crosshair;
+}
+
+/* Cropped formula preview */
+#croppedCanvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+    border: 1px solid #cbd5df;
+    border-radius: 8px;
+    background: #fbfdff;
+}
+
+/* Crop controls */
+.crop-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.crop-buttons button {
+    flex: 1;
+}
+
+/* LaTeX output */
+#latexOutput {
+    display: block;
+    width: 100%;
+    min-height: 130px;
+    margin-top: 8px;
+    padding: 14px;
+    resize: vertical;
+    border: 1px solid #cbd5df;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #243447;
+    background: #fbfdff;
+}
+
+#latexOutput:focus {
+    outline: none;
+    border-color: #2463a6;
+    box-shadow: 0 0 0 2px rgba(36, 99, 166, 0.15);
+}
+
+/* Math status */
+#mathStatus {
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #6b7c8f;
+}
+
+/* Mobile math layout */
+@media (max-width: 700px) {
+    .math-section {
+        padding: 20px;
+    }
+
+    .crop-buttons button,
+    .math-section .result-buttons button {
+        flex: 1;
+    }
+}
