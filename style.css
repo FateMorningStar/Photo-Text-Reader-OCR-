@@ -134,7 +134,7 @@ button:disabled {
     width: 100%;
     margin-top: 18px;
 }
-
+/* Rotation */
 .rotation-buttons {
     display: flex;
     justify-content: center;
