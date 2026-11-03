@@ -1,4 +1,4 @@
-// Get elements from the HTML
+// Get HTML elements
 const imageInput = document.getElementById("imageInput");
 const imagePreview = document.getElementById("imagePreview");
 const extractButton = document.getElementById("extractButton");
@@ -8,16 +8,13 @@ const downloadButton = document.getElementById("downloadButton");
 const clearButton = document.getElementById("clearButton");
 const statusMessage = document.getElementById("statusMessage");
 
-// Store the selected image
 let selectedImage = null;
 
-// Handle image selection
+// Handle The image selection
 imageInput.addEventListener("change", function () {
     const file = imageInput.files[0];
 
-    if (!file) {
-        return;
-    }
+    if (!file) return;
 
     if (!file.type.startsWith("image/")) {
         statusMessage.textContent = "Please select a valid image.";
@@ -26,22 +23,90 @@ imageInput.addEventListener("change", function () {
 
     selectedImage = file;
 
-    // Show the image preview
-    const imageURL = URL.createObjectURL(file);
-
-    imagePreview.src = imageURL;
+    imagePreview.src = URL.createObjectURL(file);
     imagePreview.hidden = false;
 
-    // Enable the extraction button
     extractButton.disabled = false;
-
-    // Clear previous results
     textOutput.value = "";
 
     statusMessage.textContent = "Image uploaded. Ready to extract text.";
 });
 
-// the Extract text using OCR
+// Preprocess image for OCR
+function preprocessImage(imageFile) {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+        const imageURL = URL.createObjectURL(imageFile);
+
+        image.onload = function () {
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+
+            // Enlarge The image to improve text recognition
+            const scale = 2;
+
+            canvas.width = image.width * scale;
+            canvas.height = image.height * scale;
+
+            context.drawImage(
+                image,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+            const imageData = context.getImageData(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+            const pixels = imageData.data;
+
+            // Grayscale and contrast enhancement
+            for (let i = 0; i < pixels.length; i += 4) {
+                const red = pixels[i];
+                const green = pixels[i + 1];
+                const blue = pixels[i + 2];
+
+                const gray =
+                    0.299 * red +
+                    0.587 * green +
+                    0.114 * blue;
+
+                const contrast = 1.5;
+
+                let value =
+                    contrast * (gray - 128) + 128;
+
+                value = Math.max(0, Math.min(255, value));
+
+                // Black-and-white threshold
+                value = value > 170 ? 255 : 0;
+
+                pixels[i] = value;
+                pixels[i + 1] = value;
+                pixels[i + 2] = value;
+            }
+
+            context.putImageData(imageData, 0, 0);
+
+            URL.revokeObjectURL(imageURL);
+            resolve(canvas);
+        };
+
+        image.onerror = function () {
+            URL.revokeObjectURL(imageURL);
+            reject(new Error("Could not load image."));
+        };
+
+        image.src = imageURL;
+    });
+}
+
+// Extract text using OCR
 extractButton.addEventListener("click", async function () {
     if (!selectedImage) {
         statusMessage.textContent = "Please upload an image first.";
@@ -49,35 +114,58 @@ extractButton.addEventListener("click", async function () {
     }
 
     extractButton.disabled = true;
-    statusMessage.textContent = "Reading image... Please wait.";
 
     try {
+        statusMessage.textContent = "Enhancing image...";
+
+        const processedImage =
+            await preprocessImage(selectedImage);
+
+        statusMessage.textContent = "Reading image...";
+
         const result = await Tesseract.recognize(
-            selectedImage,
+            processedImage,
             "eng",
             {
                 logger: function (message) {
                     if (message.status === "recognizing text") {
-                        const progress = Math.round(message.progress * 100);
+                        const progress = Math.round(
+                            message.progress * 100
+                        );
+
                         statusMessage.textContent =
                             `Extracting text... ${progress}%`;
                     }
-                }
+                },
+
+                // Recognize the image as one text block
+                tessedit_pageseg_mode:
+                    Tesseract.PSM.SINGLE_BLOCK
             }
         );
 
-        textOutput.value = result.data.text;
-        statusMessage.textContent = "Text extraction completed.";
+        const cleanedText = result.data.text
+            .replace(/[ \t]+/g, " ")
+            .replace(/\n{3,}/g, "\n\n")
+            .trim();
+
+        textOutput.value = cleanedText;
+
+        statusMessage.textContent =
+            "Extraction complete. Review the text for errors.";
+
     } catch (error) {
         console.error(error);
+
         statusMessage.textContent =
-            "Unable to extract text. Please try another image.";
+            "Unable to extract text. Try a clearer image.";
+
     } finally {
         extractButton.disabled = false;
     }
 });
 
-// Copy the extracted text
+// Copy text
 copyButton.addEventListener("click", async function () {
     const text = textOutput.value;
 
@@ -88,20 +176,25 @@ copyButton.addEventListener("click", async function () {
 
     try {
         await navigator.clipboard.writeText(text);
-        statusMessage.textContent = "Text copied to clipboard.";
+
+        statusMessage.textContent =
+            "Text copied to clipboard.";
+
     } catch (error) {
         textOutput.select();
+
         statusMessage.textContent =
-            "Select the text and copy it manually.";
+            "Please copy the selected text manually.";
     }
 });
 
-// Download the extracted text as a TXT file
+// Download text file
 downloadButton.addEventListener("click", function () {
     const text = textOutput.value;
 
     if (!text.trim()) {
-        statusMessage.textContent = "There is no text to download.";
+        statusMessage.textContent =
+            "There is no text to download.";
         return;
     }
 
@@ -117,14 +210,15 @@ downloadButton.addEventListener("click", function () {
 
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    link.remove();
 
     URL.revokeObjectURL(downloadURL);
 
-    statusMessage.textContent = "Text file downloaded.";
+    statusMessage.textContent =
+        "Text file downloaded.";
 });
 
-// Clear the app
+// Clear app
 clearButton.addEventListener("click", function () {
     imageInput.value = "";
     imagePreview.src = "";
