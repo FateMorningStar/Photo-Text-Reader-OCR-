@@ -33,7 +33,7 @@ body {
     opacity: 0.9;
 }
 
-/* The Main content */
+/* Main content */
 .container {
     width: 90%;
     max-width: 1000px;
@@ -44,7 +44,7 @@ body {
     flex: 1;
 }
 
-/* Sections */
+/* Main sections */
 .upload-section,
 .result-section {
     background-color: white;
@@ -91,7 +91,7 @@ body {
     color: #6b7c8f;
 }
 
-/* The Image preview */
+/* Image preview */
 .preview-container {
     margin-top: 18px;
     text-align: center;
@@ -128,13 +128,15 @@ button:disabled {
     background-color: #a8b8c8;
     cursor: not-allowed;
     transform: none;
+    opacity: 0.7;
 }
 
 #extractButton {
     width: 100%;
     margin-top: 18px;
 }
-/* Rotation */
+
+/* Rotation controls */
 .rotation-buttons {
     display: flex;
     justify-content: center;
@@ -164,7 +166,7 @@ button:disabled {
     font-size: 1rem;
 }
 
-/* The Text output */
+/* Editable text output */
 #textOutput {
     width: 100%;
     min-height: 250px;
@@ -185,7 +187,7 @@ button:disabled {
     box-shadow: 0 0 0 2px rgba(36, 99, 166, 0.15);
 }
 
-/* The Result buttons */
+/* Result buttons */
 .result-buttons {
     display: flex;
     flex-wrap: wrap;
@@ -208,7 +210,7 @@ footer {
     font-size: 0.9rem;
 }
 
-/* The Mobile layout */
+/* Mobile layout */
 @media (max-width: 700px) {
     .container {
         grid-template-columns: 1fr;
@@ -231,272 +233,5 @@ footer {
 
     .result-buttons button {
         flex: 1;
-    }
-}
-
-.math-section {
-    margin-top: 24px;
-    padding: 24px;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-}
-
-.math-section h2 {
-    margin-top: 0;
-}
-
-.math-section p {
-    line-height: 1.6;
-}
-
-.math-preview-container {
-    margin: 16px 0;
-    text-align: center;
-}
-
-#mathImagePreview {
-    max-width: 100%;
-    max-height: 300px;
-    object-fit: contain;
-    border-radius: 8px;
-}
-
-#latexOutput {
-    display: block;
-    width: 100%;
-    min-height: 120px;
-    margin-top: 8px;
-    padding: 12px;
-    box-sizing: border-box;
-    resize: vertical;
-    font-family: monospace;
-    font-size: 14px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-}
-
-#mathStatus {
-    color: #2463a6;
-    font-size: 14px;
-}
-
-/* Math formula recognition */
-.math-section {
-    grid-column: 1 / -1;
-    margin-top: 0;
-}
-
-.math-section h2 {
-    color: #2463a6;
-    margin-bottom: 14px;
-    font-size: 1.3rem;
-}
-
-.math-section h3 {
-    color: #2463a6;
-    margin: 20px 0 10px;
-    font-size: 1.1rem;
-}
-
-.math-section p {
-    margin-bottom: 14px;
-    color: #6b7c8f;
-}
-
-.math-section label {
-    display: block;
-    margin: 12px 0 6px;
-    color: #2463a6;
-    font-weight: bold;
-}
-
-/* Formula image preview */
-.math-preview-container,
-.cropped-preview-container {
-    margin: 18px 0;
-    text-align: center;
-}
-
-#mathImagePreview {
-    display: block;
-    max-width: 100%;
-    max-height: 350px;
-    margin: 0 auto;
-    object-fit: contain;
-    border-radius: 8px;
-}
-
-/* Cropping workspace */
-#cropArea {
-    margin-top: 18px;
-    padding: 12px;
-    border: 1px solid #cbd5df;
-    border-radius: 8px;
-    background: #f7fbff;
-}
-
-#cropCanvas {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: 6px;
-    touch-action: none;
-    cursor: crosshair;
-}
-
-/* Cropped formula preview */
-#croppedCanvas {
-    display: block;
-    max-width: 100%;
-    height: auto;
-    margin: 0 auto;
-    border: 1px solid #cbd5df;
-    border-radius: 8px;
-    background: #fbfdff;
-}
-
-/* Crop controls */
-.crop-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 12px;
-}
-
-.crop-buttons button {
-    flex: 1;
-}
-
-/* LaTeX output */
-#latexOutput {
-    display: block;
-    width: 100%;
-    min-height: 130px;
-    margin-top: 8px;
-    padding: 14px;
-    resize: vertical;
-    border: 1px solid #cbd5df;
-    border-radius: 8px;
-    font-family: monospace;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    color: #243447;
-    background: #fbfdff;
-}
-
-#latexOutput:focus {
-    outline: none;
-    border-color: #2463a6;
-    box-shadow: 0 0 0 2px rgba(36, 99, 166, 0.15);
-}
-
-/* Math status */
-#mathStatus {
-    margin-top: 15px;
-    font-size: 0.9rem;
-    color: #6b7c8f;
-}
-
-/* Mobile math layout */
-@media (max-width: 700px) {
-    .math-section {
-        padding: 20px;
-    }
-
-    .crop-buttons button,
-    .math-section .result-buttons button {
-        flex: 1;
-    }
-}
-
-
-/* Math Formula Recognition fixes */
-
-.math-section {
-    grid-column: 1 / -1;
-    height: auto;
-    min-height: 0;
-    margin-top: 0;
-    align-self: start;
-}
-
-.math-section p {
-    line-height: 1.5;
-}
-
-/* Uploaded formula preview */
-#mathImagePreview {
-    display: block;
-    width: 100%;
-    max-height: 320px;
-    height: auto;
-    object-fit: contain;
-    object-position: center;
-    margin: 16px 0;
-    border-radius: 8px;
-    background: #f5f9fc;
-}
-
-/* Crop workspace */
-#cropArea {
-    margin-top: 16px;
-    padding: 14px;
-    border: 1px solid #d4e2ed;
-    border-radius: 10px;
-    background: #f5f9fc;
-}
-
-#cropCanvas {
-    display: block;
-    width: 100%;
-    height: auto;
-    max-height: 500px;
-    object-fit: contain;
-    touch-action: none;
-    cursor: crosshair;
-    border-radius: 6px;
-}
-
-/* Cropped formula result */
-#croppedCanvas {
-    display: block;
-    width: 100%;
-    height: auto;
-    max-height: 300px;
-    object-fit: contain;
-    margin: 12px 0 20px;
-    border: 1px solid #d4e2ed;
-    border-radius: 8px;
-    background: #fff;
-}
-
-/* Keep hidden crop area hidden */
-#cropArea[hidden] {
-    display: none !important;
-}
-
-/* Clearer button states */
-button:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-}
-
-/* Reduce excess space on smaller screens */
-@media (max-width: 700px) {
-    .math-section {
-        padding: 18px;
-    }
-
-    #mathImagePreview {
-        max-height: 240px;
-    }
-
-    #cropCanvas {
-        max-height: 350px;
-    }
-
-    #croppedCanvas {
-        max-height: 220px;
     }
 }
