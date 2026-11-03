@@ -1,3 +1,5 @@
+// PHOTO TEXT READER
+// Main OCR + Math Formula Image Cropping
 // Main OCR elements
 const imageInput = document.getElementById("imageInput");
 const imagePreview = document.getElementById("imagePreview");
@@ -36,6 +38,10 @@ let cropSelection = null;
 let cropStart = null;
 let isSelecting = false;
 
+// Disable crop buttons until the image/selection is ready
+startCropButton.disabled = true;
+cropButton.disabled = true;
+
 // Main OCR image upload
 imageInput.addEventListener("change", () => {
     const file = imageInput.files[0];
@@ -55,6 +61,7 @@ imageInput.addEventListener("change", () => {
     }
 
     previewURL = URL.createObjectURL(file);
+
     imagePreview.src = previewURL;
     imagePreview.style.transform = "rotate(0deg)";
 
@@ -70,6 +77,7 @@ function rotateImage(direction) {
     }
 
     rotation = (rotation + direction + 360) % 360;
+
     imagePreview.style.transform = `rotate(${rotation}deg)`;
 }
 
@@ -81,6 +89,7 @@ function preprocessImage(file, angle = 0) {
 
         image.onload = () => {
             const maxDimension = 3000;
+
             const scale = Math.min(
                 2,
                 maxDimension / Math.max(image.width, image.height)
@@ -93,14 +102,22 @@ function preprocessImage(file, angle = 0) {
             const context = canvas.getContext("2d");
 
             const normalizedAngle = ((angle % 360) + 360) % 360;
+
             const isSideways =
-                normalizedAngle === 90 || normalizedAngle === 270;
+                normalizedAngle === 90 ||
+                normalizedAngle === 270;
 
             canvas.width = isSideways ? height : width;
             canvas.height = isSideways ? width : height;
 
-            context.translate(canvas.width / 2, canvas.height / 2);
-            context.rotate((normalizedAngle * Math.PI) / 180);
+            context.translate(
+                canvas.width / 2,
+                canvas.height / 2
+            );
+
+            context.rotate(
+                (normalizedAngle * Math.PI) / 180
+            );
 
             context.drawImage(
                 image,
@@ -111,6 +128,7 @@ function preprocessImage(file, angle = 0) {
             );
 
             URL.revokeObjectURL(objectURL);
+
             resolve(canvas);
         };
 
@@ -123,7 +141,7 @@ function preprocessImage(file, angle = 0) {
     });
 }
 
-// Extract text with Tesseract
+// Extract text with Tesseract.js
 extractButton.addEventListener("click", async () => {
     if (!selectedImage) {
         statusMessage.textContent = "Please upload an image first.";
@@ -155,6 +173,7 @@ extractButton.addEventListener("click", async () => {
                             `Recognizing text... ${progress}%`;
                     }
                 },
+
                 tessedit_pageseg_mode: layoutMode.value,
                 preserve_interword_spaces: "1"
             }
@@ -168,14 +187,16 @@ extractButton.addEventListener("click", async () => {
 
     } catch (error) {
         console.error(error);
+
         statusMessage.textContent =
             "Text extraction failed. Please try another image.";
+
     } finally {
         extractButton.disabled = false;
     }
 });
 
-// Copy OCR text
+// Copy extracted OCR text
 copyButton.addEventListener("click", async () => {
     if (!textOutput.value.trim()) {
         statusMessage.textContent = "There is no text to copy.";
@@ -184,33 +205,39 @@ copyButton.addEventListener("click", async () => {
 
     try {
         await navigator.clipboard.writeText(textOutput.value);
+
         statusMessage.textContent = "Text copied.";
+
     } catch (error) {
         textOutput.select();
         document.execCommand("copy");
+
         statusMessage.textContent = "Text copied.";
     }
 });
 
-// Download OCR text
+// Download extracted OCR text
 downloadButton.addEventListener("click", () => {
     if (!textOutput.value.trim()) {
         statusMessage.textContent = "There is no text to download.";
         return;
     }
 
-    const blob = new Blob([textOutput.value], {
-        type: "text/plain;charset=utf-8"
-    });
+    const blob = new Blob(
+        [textOutput.value],
+        { type: "text/plain;charset=utf-8" }
+    );
 
     const downloadURL = URL.createObjectURL(blob);
     const link = document.createElement("a");
 
     link.href = downloadURL;
     link.download = "extracted-text.txt";
+
     link.click();
 
     URL.revokeObjectURL(downloadURL);
+
     statusMessage.textContent = "Text file downloaded.";
 });
 
@@ -224,6 +251,12 @@ clearButton.addEventListener("click", () => {
     imagePreview.style.transform = "rotate(0deg)";
 
     textOutput.value = "";
+
+    if (previewURL) {
+        URL.revokeObjectURL(previewURL);
+        previewURL = null;
+    }
+
     statusMessage.textContent = "Cleared.";
 });
 
@@ -240,6 +273,7 @@ mathImageInput.addEventListener("change", () => {
 
     if (mathImageURL) {
         URL.revokeObjectURL(mathImageURL);
+        mathImageURL = null;
     }
 
     mathImageURL = URL.createObjectURL(file);
@@ -248,6 +282,10 @@ mathImageInput.addEventListener("change", () => {
     mathImage.onload = () => {
         mathImagePreview.src = mathImageURL;
 
+        // Enable cropping after the image loads
+        startCropButton.disabled = false;
+
+        // Prepare crop canvas using original image dimensions
         cropCanvas.width = mathImage.naturalWidth;
         cropCanvas.height = mathImage.naturalHeight;
 
@@ -266,17 +304,24 @@ mathImageInput.addEventListener("change", () => {
             cropCanvas.height
         );
 
+        // Reset previous crop
         cropSelection = null;
+        cropStart = null;
+        isSelecting = false;
+
         cropArea.hidden = true;
+        cropButton.disabled = true;
+
         croppedCanvas.width = 0;
         croppedCanvas.height = 0;
 
         mathStatus.textContent =
-            "Image loaded. Select the formula area to crop.";
+            "Image loaded. Select Start Cropping to choose a formula.";
     };
 
     mathImage.onerror = () => {
-        mathStatus.textContent = "Could not load the selected image.";
+        mathStatus.textContent =
+            "Could not load the selected image.";
     };
 
     mathImage.src = mathImageURL;
@@ -285,14 +330,18 @@ mathImageInput.addEventListener("change", () => {
 // Show crop workspace
 startCropButton.addEventListener("click", () => {
     if (!mathImage) {
-        mathStatus.textContent = "Please upload a formula image first.";
+        mathStatus.textContent =
+            "Please upload a formula image first.";
         return;
     }
 
     cropArea.hidden = false;
+
     cropSelection = null;
+    cropButton.disabled = true;
 
     drawCropCanvas();
+
     mathStatus.textContent =
         "Drag across the image to select the formula.";
 });
@@ -318,11 +367,17 @@ function drawCropCanvas() {
 
     if (!cropSelection) return;
 
-    const { x, y, width, height } = cropSelection;
+    const {
+        x,
+        y,
+        width,
+        height
+    } = cropSelection;
 
     cropContext.save();
 
     cropContext.strokeStyle = "#2463a6";
+
     cropContext.lineWidth = Math.max(
         2,
         cropCanvas.width / 500
@@ -333,16 +388,26 @@ function drawCropCanvas() {
         Math.max(3, cropCanvas.width / 200)
     ]);
 
-    cropContext.strokeRect(x, y, width, height);
-
     cropContext.fillStyle = "rgba(36, 99, 166, 0.15)";
-    cropContext.fillRect(x, y, width, height);
+
+    cropContext.fillRect(
+        x,
+        y,
+        width,
+        height
+    );
+
+    cropContext.strokeRect(
+        x,
+        y,
+        width,
+        height
+    );
 
     cropContext.restore();
 }
 
-// Convert pointer position to
-// original canvas coordinates
+// Get pointer position on canvas
 function getCanvasPosition(event) {
     const rect = cropCanvas.getBoundingClientRect();
 
@@ -355,15 +420,17 @@ function getCanvasPosition(event) {
     };
 }
 
-// Crop selection pointer events
+// Start crop selection
 // Works with mouse and touch
 cropCanvas.addEventListener("pointerdown", (event) => {
     if (!mathImage || cropArea.hidden) return;
 
     event.preventDefault();
+
     cropCanvas.setPointerCapture(event.pointerId);
 
     cropStart = getCanvasPosition(event);
+
     cropSelection = {
         x: cropStart.x,
         y: cropStart.y,
@@ -372,10 +439,13 @@ cropCanvas.addEventListener("pointerdown", (event) => {
     };
 
     isSelecting = true;
+
+    cropButton.disabled = true;
+
     drawCropCanvas();
 });
 
-
+// Update crop selection while dragging
 cropCanvas.addEventListener("pointermove", (event) => {
     if (!isSelecting || !cropStart) return;
 
@@ -383,10 +453,23 @@ cropCanvas.addEventListener("pointermove", (event) => {
 
     const current = getCanvasPosition(event);
 
-    const x = Math.min(cropStart.x, current.x);
-    const y = Math.min(cropStart.y, current.y);
-    const width = Math.abs(current.x - cropStart.x);
-    const height = Math.abs(current.y - cropStart.y);
+    const x = Math.min(
+        cropStart.x,
+        current.x
+    );
+
+    const y = Math.min(
+        cropStart.y,
+        current.y
+    );
+
+    const width = Math.abs(
+        current.x - cropStart.x
+    );
+
+    const height = Math.abs(
+        current.y - cropStart.y
+    );
 
     cropSelection = {
         x,
@@ -398,24 +481,30 @@ cropCanvas.addEventListener("pointermove", (event) => {
     drawCropCanvas();
 });
 
-
+// Finish crop selection
 function finishCropSelection() {
     if (!isSelecting) return;
 
     isSelecting = false;
     cropStart = null;
 
-    if (
+    const validSelection =
         cropSelection &&
         cropSelection.width > 5 &&
-        cropSelection.height > 5
-    ) {
+        cropSelection.height > 5;
+
+    if (validSelection) {
+        cropButton.disabled = false;
+
         mathStatus.textContent =
-            "Area selected. Press Crop Formula to continue.";
+            "Formula area selected. Press Crop Formula.";
+
     } else {
         cropSelection = null;
+        cropButton.disabled = true;
+
         mathStatus.textContent =
-            "Selection too small. Please select a larger area.";
+            "Selection is too small. Drag to select a larger area.";
     }
 
     drawCropCanvas();
@@ -444,10 +533,20 @@ cropButton.addEventListener("click", () => {
         return;
     }
 
-    const { x, y, width, height } = cropSelection;
+    const {
+        x,
+        y,
+        width,
+        height
+    } = cropSelection;
 
-    croppedCanvas.width = Math.round(width);
-    croppedCanvas.height = Math.round(height);
+    const cropX = Math.round(x);
+    const cropY = Math.round(y);
+    const cropWidth = Math.round(width);
+    const cropHeight = Math.round(height);
+
+    croppedCanvas.width = cropWidth;
+    croppedCanvas.height = cropHeight;
 
     croppedContext.clearRect(
         0,
@@ -458,30 +557,34 @@ cropButton.addEventListener("click", () => {
 
     croppedContext.drawImage(
         mathImage,
-        x,
-        y,
-        width,
-        height,
+        cropX,
+        cropY,
+        cropWidth,
+        cropHeight,
         0,
         0,
-        croppedCanvas.width,
-        croppedCanvas.height
+        cropWidth,
+        cropHeight
     );
 
     mathStatus.textContent =
-        "Formula image cropped. Automatic math recognition is not connected yet.";
+        "Formula cropped. You can enter or edit its LaTeX manually.";
 });
 
 // Cancel crop workspace
 cancelCropButton.addEventListener("click", () => {
     cropArea.hidden = true;
+
     cropSelection = null;
-    isSelecting = false;
     cropStart = null;
+    isSelecting = false;
+
+    cropButton.disabled = true;
 
     drawCropCanvas();
 
-    mathStatus.textContent = "Crop selection cancelled.";
+    mathStatus.textContent =
+        "Crop selection cancelled.";
 });
 
 // Copy LaTeX text
@@ -493,11 +596,16 @@ copyLatexButton.addEventListener("click", async () => {
     }
 
     try {
-        await navigator.clipboard.writeText(latexOutput.value);
+        await navigator.clipboard.writeText(
+            latexOutput.value
+        );
+
         mathStatus.textContent = "LaTeX copied.";
+
     } catch (error) {
         latexOutput.select();
         document.execCommand("copy");
+
         mathStatus.textContent = "LaTeX copied.";
     }
 });
@@ -505,6 +613,7 @@ copyLatexButton.addEventListener("click", async () => {
 // Clear math section
 clearMathButton.addEventListener("click", () => {
     mathImageInput.value = "";
+
     mathImagePreview.removeAttribute("src");
 
     if (mathImageURL) {
@@ -526,5 +635,9 @@ clearMathButton.addEventListener("click", () => {
     croppedCanvas.height = 0;
 
     latexOutput.value = "";
+
+    startCropButton.disabled = true;
+    cropButton.disabled = true;
+
     mathStatus.textContent = "Math section cleared.";
 });
