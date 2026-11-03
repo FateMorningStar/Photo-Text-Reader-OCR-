@@ -6,6 +6,7 @@ const copyButton = document.getElementById("copyButton");
 const downloadButton = document.getElementById("downloadButton");
 const clearButton = document.getElementById("clearButton");
 const statusMessage = document.getElementById("statusMessage");
+const layoutMode = document.getElementById("layoutMode");
 
 let selectedImage = null;
 let previewURL = null;
@@ -18,7 +19,9 @@ imageInput.addEventListener("change", function () {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-        statusMessage.textContent = "Please select a valid image.";
+        statusMessage.textContent =
+            "Please select a valid image.";
+
         imageInput.value = "";
         return;
     }
@@ -61,8 +64,6 @@ function rotateImage(direction) {
 }
 
 // PREPROCESS IMAGE
-// Preserve original colors and grayscale
-
 function preprocessImage(imageFile, angle = 0) {
     return new Promise((resolve, reject) => {
         const image = new Image();
@@ -83,7 +84,6 @@ function preprocessImage(imageFile, angle = 0) {
             const normalizedAngle =
                 ((angle % 360) + 360) % 360;
 
-            // Swap canvas dimensions for 90° or 270° rotation
             if (
                 normalizedAngle === 90 ||
                 normalizedAngle === 270
@@ -118,72 +118,14 @@ function preprocessImage(imageFile, angle = 0) {
 
         image.onerror = function () {
             URL.revokeObjectURL(imageURL);
-            reject(new Error("Could not load image."));
+
+            reject(
+                new Error("Could not load image.")
+            );
         };
 
         image.src = imageURL;
     });
-}
-
-// OCR LAYOUT SELECTION
-function chooseLayoutMode() {
-    const choice = prompt(
-        "Choose OCR layout mode:\n\n" +
-        "1 - Automatic page layout\n" +
-        "2 - Single text block\n" +
-        "3 - Single text column\n" +
-        "4 - Sparse text / scattered text\n\n" +
-        "Enter 1, 2, 3, or 4:",
-        "1"
-    );
-
-    if (choice === null) {
-        return null;
-    }
-
-    const modes = {
-        "1": "3",
-        "2": "6",
-        "3": "4",
-        "4": "11"
-    };
-
-    return modes[choice] || "3";
-}
-
-// AUTOMATIC ORIENTATION DETECTION
-async function detectOrientation(image) {
-    statusMessage.textContent =
-        "Detecting image orientation...";
-
-    try {
-        const result = await Tesseract.detect(image);
-
-        const detectedAngle =
-            result.data.orientation_degrees;
-
-        const confidence =
-            result.data.orientation_confidence;
-
-        // Only trust orientation when confidence is adequate
-        if (
-            typeof detectedAngle === "number" &&
-            typeof confidence === "number" &&
-            confidence >= 5
-        ) {
-            return (360 - detectedAngle) % 360;
-        }
-
-        return 0;
-
-    } catch (error) {
-        console.warn(
-            "Orientation detection was unsuccessful:",
-            error
-        );
-
-        return 0;
-    }
 }
 
 // EXTRACT TEXT
@@ -194,34 +136,19 @@ extractButton.addEventListener("click", async function () {
         return;
     }
 
-    const layoutMode =
-    document.getElementById("layoutMode").value;
-
     extractButton.disabled = true;
 
     try {
-        // First prepare the image using manual rotation
-        let processedImage = await preprocessImage(
+        statusMessage.textContent =
+            "Preparing image...";
+
+        const processedImage = await preprocessImage(
             selectedImage,
             rotation
         );
 
-        // Detect orientation and correct the image
-        const detectedRotation =
-            await detectOrientation(processedImage);
-
-        if (detectedRotation !== 0) {
-            statusMessage.textContent =
-                `Correcting orientation by ${detectedRotation}°...`;
-
-            processedImage = await preprocessImage(
-                selectedImage,
-                rotation + detectedRotation
-            );
-        }
-
         statusMessage.textContent =
-            "Extracting text...";
+            "Starting text recognition...";
 
         const result = await Tesseract.recognize(
             processedImage,
@@ -238,7 +165,10 @@ extractButton.addEventListener("click", async function () {
                     }
                 },
 
-                tessedit_pageseg_mode: layoutMode,
+                // Use the selected layout mode
+                tessedit_pageseg_mode:
+                    layoutMode ? layoutMode.value : "1",
+
                 preserve_interword_spaces: "1"
             }
         );
@@ -262,14 +192,14 @@ extractButton.addEventListener("click", async function () {
         console.error("OCR error:", error);
 
         statusMessage.textContent =
-            "OCR failed. Try a clearer image or rotate it manually.";
+            "OCR failed. Try another image or rotate it manually.";
 
     } finally {
         extractButton.disabled = false;
     }
 });
 
-//COPY TEXT
+// COPY TEXT
 copyButton.addEventListener("click", async function () {
     const text = textOutput.value;
 
@@ -294,7 +224,7 @@ copyButton.addEventListener("click", async function () {
     }
 });
 
-//DOWNLOAD TEXT
+// DOWNLOAD TEXT
 downloadButton.addEventListener("click", function () {
     const text = textOutput.value;
 
