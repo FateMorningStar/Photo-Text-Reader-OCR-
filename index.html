@@ -10,39 +10,41 @@
 </head>
 
 <body>
+<header class="header">
+    <h1>Photo Text Reader</h1>
+    <p>Convert images into editable text using OCR.</p>
+</header>
+    
+<main class="container">
+<section class="upload-section">
+<h2>Upload an Image</h2>
 
-    <header class="header">
-        <h1>Photo Text Reader</h1>
-        <p>Convert images into editable text using OCR.</p>
-    </header>
+<label for="imageInput" class="upload-box">
+    <span class="upload-icon">+</span>
+    <span>Choose an image</span>
+    <small>JPG, PNG, or JPEG</small>
+    </label>
+<input type="file"
+    id="imageInput"
+    accept="image/png, image/jpeg" hidden>
 
-    <main class="container">
+    <div class="preview-container">
+    <img id="imagePreview"
+        alt="Uploaded image preview"
+        hidden>
+            </div>
+            
+    <div class="rotation-buttons">
+    <button type="button" onclick="rotateImage(-90)">
+        Rotate Left
+    </button>
 
-        <section class="upload-section">
-            <h2>Upload an Image</h2>
-
-            <label for="imageInput" class="upload-box">
-                <span class="upload-icon">+</span>
-                <span>Choose an image</span>
-                <small>JPG, PNG, or JPEG</small>
-            </label>
-
-            <input
-                type="file"
-                id="imageInput"
-                accept="image/png, image/jpeg"
-                hidden
-            >
-
-            <div class="preview-container">
-                <img
-                    id="imagePreview"
-                    alt="Uploaded image preview"
-                    hidden
-                >
+    <button type="button" onclick="rotateImage(90)">
+        Rotate Right
+    </button>
             </div>
 
-            <button id="extractButton" disabled>
+    <button id="extractButton" disabled>
                 Extract Text
             </button>
         </section>
@@ -54,23 +56,22 @@
                 placeholder="Your extracted text will appear here..."
             ></textarea>
 
-            <div class="result-buttons">
-                <button id="copyButton">
-                    Copy Text
-                </button>
+    <div class="result-buttons">
+    <button id="copyButton">
+        Copy Text
+    </button>
 
-                <button id="downloadButton">
-                    Download TXT
-                </button>
+    <button id="downloadButton">
+        Download TXT
+    </button>
 
-                <button id="clearButton">
-                    Clear
-                </button>
+    <button id="clearButton">
+        Clear
+    </button>
             </div>
 
-            <p id="statusMessage">
-                Upload an image to get started.
-            </p>
+    <p id="statusMessage">
+    Upload an image to get started.</p>
         </section>
     </main>
   
