@@ -233,3 +233,50 @@ footer {
         flex: 1;
     }
 }
+
+.math-section {
+    margin-top: 24px;
+    padding: 24px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.math-section h2 {
+    margin-top: 0;
+}
+
+.math-section p {
+    line-height: 1.6;
+}
+
+.math-preview-container {
+    margin: 16px 0;
+    text-align: center;
+}
+
+#mathImagePreview {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+#latexOutput {
+    display: block;
+    width: 100%;
+    min-height: 120px;
+    margin-top: 8px;
+    padding: 12px;
+    box-sizing: border-box;
+    resize: vertical;
+    font-family: monospace;
+    font-size: 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+}
+
+#mathStatus {
+    color: #2463a6;
+    font-size: 14px;
+}
