@@ -142,6 +142,28 @@ button:disabled {
     margin-top: 12px;
 }
 
+/* OCR settings */
+.ocr-settings {
+    margin-top: 15px;
+}
+
+.ocr-settings label {
+    display: block;
+    margin-bottom: 6px;
+    color: #2463a6;
+    font-weight: bold;
+}
+
+.ocr-settings select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5df;
+    border-radius: 7px;
+    background: #fbfdff;
+    color: #243447;
+    font-size: 1rem;
+}
+
 /* The Text output */
 #textOutput {
     width: 100%;
