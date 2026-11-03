@@ -17,7 +17,7 @@
 
     <main class="container">
 
-        <!-- THE IMAGE UPLOAD SECTION -->
+        <!-- IMAGE UPLOAD SECTION -->
         <section class="upload-section">
             <h2>Upload an Image</h2>
 
@@ -58,7 +58,7 @@
         </section>
 
 
-        <!-- THE EXTRACTED TEXT SECTION -->
+        <!-- EXTRACTED TEXT SECTION -->
         <section class="result-section">
             <h2>Extracted Text</h2>
 
@@ -98,19 +98,19 @@
         </section>
 
 
-        <!-- THE MATH FORMULA RECOGNITION SECTION -->
+        <!-- MATH FORMULA CROPPING SECTION -->
         <section class="math-section">
             <h2>Math Formula Recognition</h2>
 
             <p>
-                Select a cropped image containing one formula.
-                The recognized LaTeX will be editable below.
+                Upload an image, then crop one formula or
+                mathematical expression for recognition.
             </p>
 
             <label for="mathImageInput" class="upload-box">
                 <span class="upload-icon">+</span>
                 <span>Choose a formula image</span>
-                <small>PNG or JPG — one formula works best</small>
+                <small>PNG or JPG</small>
             </label>
 
             <input
@@ -123,16 +123,46 @@
             <div class="math-preview-container">
                 <img
                     id="mathImagePreview"
-                    alt="Selected formula preview"
+                    alt="Formula image preview"
                     hidden
                 >
             </div>
 
-            <label for="latexOutput">LaTeX Output</label>
+            <button
+                id="startCropButton"
+                type="button"
+                disabled
+            >
+                Start Cropping
+            </button>
+
+            <div id="cropArea" hidden>
+                <canvas id="cropCanvas"></canvas>
+
+                <div class="crop-buttons">
+                    <button id="cropButton" type="button">
+                        Crop Formula
+                    </button>
+
+                    <button id="cancelCropButton" type="button">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+
+            <h3>Cropped Formula</h3>
+
+            <div class="cropped-preview-container">
+                <canvas id="croppedCanvas"></canvas>
+            </div>
+
+            <label for="latexOutput">
+                Editable LaTeX Output
+            </label>
 
             <textarea
                 id="latexOutput"
-                placeholder="LaTeX output will appear here..."
+                placeholder="Math OCR output will appear here..."
             ></textarea>
 
             <div class="result-buttons">
@@ -156,10 +186,10 @@
         <p>Photo Text Reader | Multimedia Project</p>
     </footer>
 
-    <!-- THE TESSERACT OCR LIBRARY -->
+    <!-- TESSERACT OCR LIBRARY -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
-    <!-- THE APP SCRIPT -->
+    <!-- APP SCRIPT -->
     <script src="script.js"></script>
 </body>
 </html>
