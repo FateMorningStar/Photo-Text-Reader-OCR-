@@ -1,0 +1,206 @@
+/* General page styling */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #eaf2f8;
+    color: #243447;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.header {
+    background-color: #2463a6;
+    color: white;
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.header h1 {
+    font-size: 2rem;
+    margin-bottom: 5px;
+}
+
+.header p {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+/* The Main content */
+.container {
+    width: 90%;
+    max-width: 1000px;
+    margin: 30px auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    flex: 1;
+}
+
+/* Sections */
+.upload-section,
+.result-section {
+    background-color: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.upload-section h2,
+.result-section h2 {
+    color: #2463a6;
+    margin-bottom: 18px;
+    font-size: 1.3rem;
+}
+
+/* Upload box */
+.upload-box {
+    min-height: 180px;
+    border: 2px dashed #8aaed0;
+    border-radius: 10px;
+    background-color: #f7fbff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.upload-box:hover {
+    background-color: #eaf4ff;
+    border-color: #2463a6;
+}
+
+.upload-icon {
+    font-size: 2.5rem;
+    color: #2463a6;
+    line-height: 1;
+}
+
+.upload-box small {
+    color: #6b7c8f;
+}
+
+/* The Image preview */
+.preview-container {
+    margin-top: 18px;
+    text-align: center;
+}
+
+#imagePreview {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+/* Buttons */
+button {
+    background-color: #2463a6;
+    color: white;
+    border: none;
+    padding: 11px 18px;
+    border-radius: 7px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+button:hover {
+    background-color: #174a80;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+button:disabled {
+    background-color: #a8b8c8;
+    cursor: not-allowed;
+    transform: none;
+}
+
+#extractButton {
+    width: 100%;
+    margin-top: 18px;
+}
+
+/* The Text output */
+#textOutput {
+    width: 100%;
+    min-height: 250px;
+    resize: vertical;
+    padding: 14px;
+    border: 1px solid #cbd5df;
+    border-radius: 8px;
+    font-family: Arial, sans-serif;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #243447;
+    background-color: #fbfdff;
+}
+
+#textOutput:focus {
+    outline: none;
+    border-color: #2463a6;
+    box-shadow: 0 0 0 2px rgba(36, 99, 166, 0.15);
+}
+
+/* The Result buttons */
+.result-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* Status message */
+#statusMessage {
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #6b7c8f;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 18px;
+    color: #6b7c8f;
+    font-size: 0.9rem;
+}
+
+/* The Mobile layout */
+@media (max-width: 700px) {
+    .container {
+        grid-template-columns: 1fr;
+        width: 92%;
+        margin: 20px auto;
+    }
+
+    .header {
+        padding: 25px 15px;
+    }
+
+    .header h1 {
+        font-size: 1.7rem;
+    }
+
+    .upload-section,
+    .result-section {
+        padding: 20px;
+    }
+
+    .result-buttons button {
+        flex: 1;
+    }
+}
