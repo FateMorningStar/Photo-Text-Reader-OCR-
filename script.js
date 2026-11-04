@@ -240,3 +240,97 @@ clearButton.addEventListener("click", () => {
 
     statusMessage.textContent = "Cleared.";
 });
+
+// Get the current text from the output textarea
+function getTextForDownload() {
+    const text = document.getElementById("textOutput").value.trim();
+
+    if (!text) {
+        alert("Please extract or enter some text first.");
+        return null;
+    }
+
+    return text;
+}
+
+
+// Download as Word (.docx)
+async function downloadWord() {
+    const text = getTextForDownload();
+
+    if (!text) return;
+
+    const { Document, Paragraph, TextRun, Packer } = window.docx;
+
+    // Create a paragraph for each line of text
+    const paragraphs = text.split("\n").map(line => {
+        return new Paragraph({
+            children: [
+                new TextRun(line)
+            ]
+        });
+    });
+
+    const wordDocument = new Document({
+        sections: [
+            {
+                children: paragraphs
+            }
+        ]
+    });
+
+    const blob = await Packer.toBlob(wordDocument);
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "Photo-Text-Reader.docx";
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    URL.revokeObjectURL(url);
+}
+
+
+// Download as PDF (.pdf)
+function downloadPdf() {
+    const text = getTextForDownload();
+
+    if (!text) return;
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const margin = 15;
+    const lineHeight = 7;
+
+    const usableWidth = pageWidth - margin * 2;
+    const lines = pdf.splitTextToSize(text, usableWidth);
+
+    let y = margin;
+
+    lines.forEach(line => {
+        // Add another page when reaching the bottom
+        if (y + lineHeight > pageHeight - margin) {
+            pdf.addPage();
+            y = margin;
+        }
+
+        pdf.text(line, margin, y);
+        y += lineHeight;
+    });
+
+    pdf.save("Photo-Text-Reader.pdf");
+}
+
+// Connect the buttons
+document.getElementById("downloadWordButton")
+    .addEventListener("click", downloadWord);
+
+document.getElementById("downloadPdfButton")
+    .addEventListener("click", downloadPdf);
