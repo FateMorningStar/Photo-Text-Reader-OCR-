@@ -1,70 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Photo Text Reader</title>
-
-    <link rel="stylesheet" href="style.css?v=2">
-</head>
-
-<body>
-    <header class="header">
-        <h1>Photo Text Reader</h1>
-        <p>Convert images into editable text using OCR.</p>
-    </header>
-
-    <main class="container">
-
-        <!-- IMAGE UPLOAD SECTION -->
-<section class="upload-section">
-    <h2>Upload an Image</h2>
-
-<label for="imageInput" class="upload-box">
-    <span class="upload-icon">+</span>
-    <span>Choose an image</span>
-    <small>JPG, PNG, or JPEG</small>
-        </label>
-
-<input type="file"
-         id="imageInput"
-     accept="image/png, image/jpeg" hidden>
-
-<div class="preview-container">
-<img id="imagePreview"
-    alt="Uploaded image preview" hidden>
-            </div>
-
-<div class="rotation-buttons">
-    <button type="button" onclick="rotateImage(-90)"> Rotate Left
-                </button>
-
-    <button type="button" onclick="rotateImage(90)"> Rotate Right
-                </button>
-            </div>
-
-    <button id="extractButton" disabled> Extract Text
-            </button>
-        </section>
-
-        <!-- EXTRACTED TEXT SECTION -->
-        <section class="result-section">
-            <h2>Extracted Text</h2>
-
-<textarea id="textOutput" placeholder="Your extracted text will appear here...">    
-</textarea>
-
-<div class="ocr-settings">
-    <label for="layoutMode">OCR Layout Mode</label>
-
-      <select id="layoutMode">
-        <option value="3">Automatic page layout</option>
-        <option value="6">Single text block</option>
-        <option value="4">Single text column</option>
-        <option value="11">Sparse / scattered text</option>
-       </select>
-            </div>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -84,24 +17,22 @@
     </header>
 
     <main class="container">
-
-        <!-- IMAGE UPLOAD SECTION -->
+<!-- IMAGE UPLOAD SECTION -->
 <section class="upload-section">
     <h2>Upload an Image</h2>
-
 <label for="imageInput" class="upload-box">
     <span class="upload-icon">+</span>
     <span>Choose an image</span>
     <small>JPG, PNG, or JPEG</small>
-        </label>
+            </label>
 
 <input type="file"
          id="imageInput"
-     accept="image/png, image/jpeg" hidden>
+    naccept="image/png, image/jpeg" hidden>
 
-<div class="preview-container">
-<img id="imagePreview"
-    alt="Uploaded image preview" hidden>
+<div class="preview-container"> 
+    <img id="imagePreview"
+        alt="Uploaded image preview" hidden>
             </div>
 
 <div class="rotation-buttons">
@@ -115,25 +46,25 @@
     <button id="extractButton" disabled> Extract Text
             </button>
         </section>
+<!-- EXTRACTED TEXT SECTION -->
+<section class="result-section">
+<h2>Extracted Text</h2>
 
-        <!-- EXTRACTED TEXT SECTION -->
-        <section class="result-section">
-            <h2>Extracted Text</h2>
-
-<textarea id="textOutput" placeholder="Your extracted text will appear here...">    
-</textarea>
+<textarea id="textOutput"
+ placeholder="Your extracted text will appear here...">
+ </textarea>
 
 <div class="ocr-settings">
     <label for="layoutMode">OCR Layout Mode</label>
 
-      <select id="layoutMode">
-        <option value="3">Automatic page layout</option>
-        <option value="6">Single text block</option>
-        <option value="4">Single text column</option>
-        <option value="11">Sparse / scattered text</option>
-       </select>
+    <select id="layoutMode">
+    <option value="3">Automatic page layout</option>
+    <option value="6">Single text block</option>
+    <option value="4">Single text column</option>
+    <option value="11">Sparse / scattered text</option>
+</select>
             </div>
-
+<!-- RESULT BUTTONS -->
 <div class="result-buttons">
     <button id="copyButton" type="button"> Copy Text
                 </button>
@@ -141,65 +72,35 @@
     <button id="downloadButton" type="button"> Download TXT
                 </button>
 
+    <button id="downloadWordButton" type="button"> Download Word
+                </button>
+
+    <button id="downloadPdfButton" type="button"> Download PDF
+                </button>
+
     <button id="clearButton" type="button"> Clear
                 </button>
             </div>
 
-<div class="result-buttons">
-    <button id="copyButton" type="button">Copy Text</button>
-
-    <button id="downloadButton" type="button">Download TXT</button>
-
-    <button id="downloadWordButton" type="button">
-        Download Word
-    </button>
-
-    <button id="downloadPdfButton" type="button">
-        Download PDF
-    </button>
-
-    <button id="clearButton" type="button">Clear</button>
-            </div>
-
-<p id="statusMessage"> Upload an image to get started.</p>
+            <p id="statusMessage">
+                Upload an image to get started.
+            </p>
         </section>
-    </main>
+  </main>
 
     <footer>
         <p>Photo Text Reader | Multimedia Project</p>
     </footer>
 
-<!-- Word document generation -->
+<!-- WORD DOCUMENT LIBRARY -->
 <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 
-<!-- PDF generation -->
+<!-- PDF LIBRARY -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
-    <!-- TESSERACT OCR LIBRARY -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
-    <script src="script.js"></script>
-</body>
-</html>
-
-
-<p id="statusMessage"> Upload an image to get started.</p>
-        </section>
-    </main>
-
-    <footer>
-        <p>Photo Text Reader | Multimedia Project</p>
-    </footer>
-
-<!-- Word document generation -->
-<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
-
-<!-- PDF generation -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
-    <!-- TESSERACT OCR LIBRARY -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
+<!-- TESSERACT OCR LIBRARY -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <!-- APP JAVASCRIPT -->
     <script src="script.js"></script>
 </body>
 </html>
