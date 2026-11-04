@@ -1,30 +1,30 @@
- // PHOTO TEXT READER
- // Main OCR functionality
+// Photo Text Reader - script.js
+// HTML elements
 const imageInput = document.getElementById("imageInput");
 const imagePreview = document.getElementById("imagePreview");
 const extractButton = document.getElementById("extractButton");
 const textOutput = document.getElementById("textOutput");
+const layoutMode = document.getElementById("layoutMode");
 const copyButton = document.getElementById("copyButton");
 const downloadButton = document.getElementById("downloadButton");
+const downloadWordButton = document.getElementById("downloadWordButton");
+const downloadPdfButton = document.getElementById("downloadPdfButton");
 const clearButton = document.getElementById("clearButton");
 const statusMessage = document.getElementById("statusMessage");
-const layoutMode = document.getElementById("layoutMode");
 
+// State
 let selectedImage = null;
 let previewURL = null;
 let rotation = 0;
 
-// Disable extraction until an image is uploaded
-extractButton.disabled = true;
-
-// Upload image
-imageInput.addEventListener("change", () => {
+// Upload and preview image
+imageInput.addEventListener("change", function () {
     const file = imageInput.files[0];
 
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-        statusMessage.textContent = "Please select a valid image.";
+    if (!["image/png", "image/jpeg"].includes(file.type)) {
+        statusMessage.textContent = "Please upload a JPG or PNG image.";
         imageInput.value = "";
         return;
     }
@@ -37,91 +37,65 @@ imageInput.addEventListener("change", () => {
     }
 
     previewURL = URL.createObjectURL(file);
-
     imagePreview.src = previewURL;
-    imagePreview.hidden = false;
     imagePreview.style.transform = "rotate(0deg)";
+    imagePreview.style.display = "block";
 
     textOutput.value = "";
     extractButton.disabled = false;
 
-    statusMessage.textContent = "Image loaded. Ready to extract text.";
+    statusMessage.textContent = "Image uploaded successfully.";
 });
 
-// Rotate image left or right
-function rotateImage(direction) {
+// Rotate image
+function rotateImage(degrees) {
     if (!selectedImage) {
         statusMessage.textContent = "Please upload an image first.";
         return;
     }
 
-    rotation = (rotation + direction + 360) % 360;
+    rotation = (rotation + degrees) % 360;
 
     imagePreview.style.transform = `rotate(${rotation}deg)`;
 }
 
 // Prepare image for OCR
-function preprocessImage(file, angle = 0) {
+function preprocessImage(file) {
     return new Promise((resolve, reject) => {
         const image = new Image();
-        const objectURL = URL.createObjectURL(file);
 
-        image.onload = () => {
-            const maxDimension = 3000;
-
-            const scale = Math.min(
-                2,
-                maxDimension / Math.max(image.width, image.height)
-            );
-
-            const width = Math.round(image.width * scale);
-            const height = Math.round(image.height * scale);
-
+        image.onload = function () {
             const canvas = document.createElement("canvas");
             const context = canvas.getContext("2d");
 
-            const normalizedAngle = ((angle % 360) + 360) % 360;
+            const isSideways = rotation === 90 || rotation === 270;
 
-            const isSideways =
-                normalizedAngle === 90 ||
-                normalizedAngle === 270;
+            canvas.width = isSideways ? image.height : image.width;
+            canvas.height = isSideways ? image.width : image.height;
 
-            canvas.width = isSideways ? height : width;
-            canvas.height = isSideways ? width : height;
-
-            context.translate(
-                canvas.width / 2,
-                canvas.height / 2
-            );
-
-            context.rotate(
-                (normalizedAngle * Math.PI) / 180
-            );
+            context.translate(canvas.width / 2, canvas.height / 2);
+            context.rotate((rotation * Math.PI) / 180);
 
             context.drawImage(
                 image,
-                -width / 2,
-                -height / 2,
-                width,
-                height
+                -image.width / 2,
+                -image.height / 2
             );
 
-            URL.revokeObjectURL(objectURL);
-
             resolve(canvas);
+            URL.revokeObjectURL(image.src);
         };
 
-        image.onerror = () => {
-            URL.revokeObjectURL(objectURL);
-            reject(new Error("Could not load the image."));
+        image.onerror = function () {
+            reject(new Error("Unable to load the image."));
         };
 
-        image.src = objectURL;
+        image.src = URL.createObjectURL(file);
     });
 }
 
 // Extract text using Tesseract.js
-extractButton.addEventListener("click", async () => {
+extractButton.addEventListener("click", async function () {
     if (!selectedImage) {
         statusMessage.textContent = "Please upload an image first.";
         return;
@@ -131,10 +105,7 @@ extractButton.addEventListener("click", async () => {
     statusMessage.textContent = "Preparing image...";
 
     try {
-        const processedImage = await preprocessImage(
-            selectedImage,
-            rotation
-        );
+        const processedImage = await preprocessImage(selectedImage);
 
         statusMessage.textContent = "Extracting text...";
 
@@ -142,70 +113,65 @@ extractButton.addEventListener("click", async () => {
             processedImage,
             "eng",
             {
-                logger: (message) => {
-                    if (message.status === "recognizing text") {
-                        const progress = Math.round(
-                            message.progress * 100
-                        );
-
+                logger: function (info) {
+                    if (info.status === "recognizing text") {
+                        const progress = Math.round(info.progress * 100);
                         statusMessage.textContent =
-                            `Recognizing text... ${progress}%`;
+                            `Extracting text: ${progress}%`;
                     }
-                },
-
-                tessedit_pageseg_mode: layoutMode.value,
-                preserve_interword_spaces: "1"
+                }
             }
         );
 
         textOutput.value = result.data.text.trim();
 
-        statusMessage.textContent = textOutput.value
-            ? "Text extraction completed."
-            : "No readable text was detected.";
-
+        if (textOutput.value) {
+            statusMessage.textContent = "Text extraction completed.";
+        } else {
+            statusMessage.textContent =
+                "No text was detected. Try another image.";
+        }
     } catch (error) {
         console.error(error);
-
         statusMessage.textContent =
-            "Text extraction failed. Please try another image.";
-
+            "Text extraction failed. Please try again.";
     } finally {
-        extractButton.disabled = !selectedImage;
+        extractButton.disabled = false;
     }
 });
 
-// Copy extracted text
-copyButton.addEventListener("click", async () => {
-    if (!textOutput.value.trim()) {
+// Copy extracted or edited text
+copyButton.addEventListener("click", async function () {
+    const text = textOutput.value;
+
+    if (!text.trim()) {
         statusMessage.textContent = "There is no text to copy.";
         return;
     }
 
     try {
-        await navigator.clipboard.writeText(textOutput.value);
-
-        statusMessage.textContent = "Text copied.";
-
+        await navigator.clipboard.writeText(text);
+        statusMessage.textContent = "Text copied to clipboard.";
     } catch (error) {
         textOutput.select();
-        document.execCommand("copy");
 
-        statusMessage.textContent = "Text copied.";
+        const copied = document.execCommand("copy");
+
+        statusMessage.textContent = copied
+            ? "Text copied to clipboard."
+            : "Unable to copy text.";
     }
 });
 
-// Download extracted text
-downloadButton.addEventListener("click", () => {
-    if (!textOutput.value.trim()) {
-        statusMessage.textContent = "There is no text to download.";
-        return;
-    }
+// Download as TXT
+downloadButton.addEventListener("click", function () {
+    const text = getTextForDownload();
 
-    const blob = new Blob(
-        [textOutput.value],
-        { type: "text/plain;charset=utf-8" }
-    );
+    if (text === null) return;
+
+    const blob = new Blob([text], {
+        type: "text/plain;charset=utf-8"
+    });
 
     const downloadURL = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -213,124 +179,129 @@ downloadButton.addEventListener("click", () => {
     link.href = downloadURL;
     link.download = "extracted-text.txt";
 
+    document.body.appendChild(link);
     link.click();
+    link.remove();
 
-    URL.revokeObjectURL(downloadURL);
+    setTimeout(() => {
+        URL.revokeObjectURL(downloadURL);
+    }, 1000);
 
-    statusMessage.textContent = "Text file downloaded.";
+    statusMessage.textContent = "TXT file downloaded.";
 });
 
-// Clear OCR section
-clearButton.addEventListener("click", () => {
-    imageInput.value = "";
-    selectedImage = null;
-    rotation = 0;
+// Download as Word (.docx)
+downloadWordButton.addEventListener("click", async function () {
+    const text = getTextForDownload();
 
-    imagePreview.removeAttribute("src");
-    imagePreview.hidden = true;
-    imagePreview.style.transform = "rotate(0deg)";
+    if (text === null) return;
 
-    textOutput.value = "";
-    extractButton.disabled = true;
+    try {
+        const { Document, Paragraph, TextRun, Packer } = window.docx;
 
-    if (previewURL) {
-        URL.revokeObjectURL(previewURL);
-        previewURL = null;
+        const paragraphs = text.split("\n").map(line => {
+            return new Paragraph({
+                children: [
+                    new TextRun(line)
+                ]
+            });
+        });
+
+        const documentFile = new Document({
+            sections: [
+                {
+                    properties: {},
+                    children: paragraphs
+                }
+            ]
+        });
+
+        const blob = await Packer.toBlob(documentFile);
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = "extracted-text.docx";
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+        }, 1000);
+
+        statusMessage.textContent = "Word document downloaded.";
+    } catch (error) {
+        console.error(error);
+        statusMessage.textContent =
+            "Unable to create the Word document.";
     }
-
-    statusMessage.textContent = "Cleared.";
 });
 
-// Get the current text from the output textarea
+// Download as PDF
+downloadPdfButton.addEventListener("click", function () {
+    const text = getTextForDownload();
+
+    if (text === null) return;
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+
+        const lines = pdf.splitTextToSize(text, 180);
+        let y = 15;
+
+        lines.forEach(line => {
+            if (y > 280) {
+                pdf.addPage();
+                y = 15;
+            }
+
+            pdf.text(line, 15, y);
+            y += 7;
+        });
+
+        pdf.save("extracted-text.pdf");
+
+        statusMessage.textContent = "PDF document downloaded.";
+    } catch (error) {
+        console.error(error);
+        statusMessage.textContent =
+            "Unable to create the PDF document.";
+    }
+});
+
+// Get text for download
 function getTextForDownload() {
-    const text = document.getElementById("textOutput").value.trim();
+    const text = textOutput.value.trim();
 
     if (!text) {
-        alert("Please extract or enter some text first.");
+        statusMessage.textContent = "There is no text to download.";
         return null;
     }
 
     return text;
 }
 
+// Clear everything
+clearButton.addEventListener("click", function () {
+    imageInput.value = "";
+    imagePreview.src = "";
+    imagePreview.style.display = "none";
+    imagePreview.style.transform = "rotate(0deg)";
 
-// Download as Word (.docx)
-async function downloadWord() {
-    const text = getTextForDownload();
+    textOutput.value = "";
 
-    if (!text) return;
+    selectedImage = null;
+    rotation = 0;
 
-    const { Document, Paragraph, TextRun, Packer } = window.docx;
+    if (previewURL) {
+        URL.revokeObjectURL(previewURL);
+        previewURL = null;
+    }
 
-    // Create a paragraph for each line of text
-    const paragraphs = text.split("\n").map(line => {
-        return new Paragraph({
-            children: [
-                new TextRun(line)
-            ]
-        });
-    });
+    extractButton.disabled = true;
 
-    const wordDocument = new Document({
-        sections: [
-            {
-                children: paragraphs
-            }
-        ]
-    });
-
-    const blob = await Packer.toBlob(wordDocument);
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "Photo-Text-Reader.docx";
-
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    URL.revokeObjectURL(url);
-}
-
-
-// Download as PDF (.pdf)
-function downloadPdf() {
-    const text = getTextForDownload();
-
-    if (!text) return;
-
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF();
-
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-
-    const margin = 15;
-    const lineHeight = 7;
-
-    const usableWidth = pageWidth - margin * 2;
-    const lines = pdf.splitTextToSize(text, usableWidth);
-
-    let y = margin;
-
-    lines.forEach(line => {
-        // Add another page when reaching the bottom
-        if (y + lineHeight > pageHeight - margin) {
-            pdf.addPage();
-            y = margin;
-        }
-
-        pdf.text(line, margin, y);
-        y += lineHeight;
-    });
-
-    pdf.save("Photo-Text-Reader.pdf");
-}
-
-// Connect the buttons
-document.getElementById("downloadWordButton")
-    .addEventListener("click", downloadWord);
-
-document.getElementById("downloadPdfButton")
-    .addEventListener("click", downloadPdf);
+    statusMessage.textContent = "Cleared.";
+});
