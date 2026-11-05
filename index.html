@@ -1,101 +1,108 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Photo Text Reader</title>
-
-    <link rel="stylesheet" href="style.css?v=2">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f8fc"><title>Photo Text Reader</title>
+       <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="style.css?v=3">
 </head>
-
+    
 <body>
-    <header class="header">
-        <h1>Photo Text Reader</h1>
-        <p>Convert images into editable text using OCR.</p>
-    </header>
-
-    <main class="container">
-<!-- IMAGE UPLOAD SECTION -->
-<section class="upload-section">
-    <h2>Upload an Image</h2>
-<label for="imageInput" class="upload-box">
-    <span class="upload-icon">+</span>
-    <span>Choose an image</span>
-    <small>JPG, PNG, or JPEG</small>
-            </label>
-
-<input type="file"
-         id="imageInput"
-     accept="image/png, image/jpeg" hidden>
-
-<div class="preview-container"> 
-    <img id="imagePreview"
-        alt="Uploaded image preview" hidden>
-            </div>
-
+<header class="topbar"><a class="brand" href="#"><span class="brand-mark">PT</span><span>Photo Text <b>Reader</b></span></a><span class="top-note"><i></i> OCR workspace</span></header>
+<div class="page">
+<section class="intro">
+    <small>IMAGE TO TEXT · OCR TOOL</small>
+    <h1>Turn a photo into <em>editable text.</em></h1>
+    <p>Upload a printed page, extract its text, then review and export your result.</p>
+</section>
+    
+<main class="workspace">
+<section class="panel">
+<div class="panel-head">
+    <div>
+        <small>STEP 01</small>
+        <h2>Add your image</h2>
+    </div>
+    <span class="panel-icon">↥</span>
+</div>
+    
+<label for="imageInput" class="dropzone" id="dropzone">
+    <span class="upload-icon">↑</span>
+    <b>Choose an image to upload</b>
+    <span>or drag and drop it here</span><small>JPG · JPEG · PNG</small>
+</label>
+    
+<input type="file" id="imageInput" accept="image/png,image/jpeg" hidden>
+<div class="subhead">
+    <b>Image preview</b>
+    <span>Your selected image appears here</span>
+</div>
+    
+<div class="preview-container">
+    <div class="empty-preview" id="emptyPreview">▧<small>No image selected</small>
+    </div><img id="imagePreview" alt="Uploaded image preview" hidden></div>
+    
 <div class="rotation-buttons">
-    <button type="button" onclick="rotateImage(-90)"> Rotate Left
-                </button>
-
-    <button type="button" onclick="rotateImage(90)"> Rotate Right
-                </button>
-            </div>
-
-    <button id="extractButton" disabled> Extract Text
-            </button>
-        </section>
-<!-- EXTRACTED TEXT SECTION -->
-<section class="result-section">
-<h2>Extracted Text</h2>
-
-<textarea id="textOutput"
- placeholder="Your extracted text will appear here...">
- </textarea>
-
-<div class="ocr-settings">
-    <label for="layoutMode">OCR Layout Mode</label>
-
-    <select id="layoutMode">
-    <option value="3">Automatic page layout</option>
-    <option value="6">Single text block</option>
-    <option value="4">Single text column</option>
-    <option value="11">Sparse / scattered text</option>
-</select>
-            </div>
-<!-- RESULT BUTTONS -->
-<div class="result-buttons">
-    <button id="copyButton" type="button"> Copy Text
-                </button>
-
-    <button id="downloadButton" type="button"> Download TXT
-                </button>
-
-    <button id="downloadWordButton" type="button"> Download Word
-                </button>
-
-    <button id="downloadPdfButton" type="button"> Download PDF
-                </button>
-
-    <button id="clearButton" type="button"> Clear
-                </button>
-            </div>
-
-            <p id="statusMessage">
-                Upload an image to get started.
-            </p>
-        </section>
-  </main>
-
-<!-- WORD DOCUMENT LIBRARY -->
+    <button id="rotateLeftButton" class="btn secondary" type="button" disabled>↶ Rotate left</button>
+    <button id="rotateRightButton" class="btn secondary" type="button" disabled>↷ Rotate right</button>
+</div>
+    
+<div class="settings">
+    <label for="layoutMode">OCR layout mode</label>
+    <select id="layoutMode"><option value="3">Automatic page layout</option>
+        <option value="6">Single text block</option><option value="4">Single text column</option>
+        <option value="11">Sparse / scattered text</option>
+    </select><p>Choose the option that best matches how text is arranged in your image.</p>
+</div>
+    
+<button id="extractButton" class="btn primary" type="button" disabled>✦ &nbsp;Extract text</button>
+</section>
+    
+<section class="panel">
+<div class="panel-head"><div>
+    <small>STEP 02</small>
+    <h2>Review your text</h2>
+</div>
+    <span class="panel-icon letters">Aa</span>
+</div>
+    
+<div class="editor-meta"><b><i></i> Editable result</b>
+    <span id="characterCount">0 characters</span>
+</div>
+    
+<textarea id="textOutput" spellcheck="false" placeholder="Your extracted text will appear here...&#10;&#10;Upload an image and select “Extract text” to get started."></textarea>
+<div class="subhead export-head">
+    <b>Export your text</b>
+    <span>Choose a format</span>
+</div>
+    
+<div class="result-buttons"><button id="copyButton" class="btn secondary" type="button">Copy text</button>
+    <button id="downloadButton" class="btn secondary" type="button">TXT</button>
+    <button id="downloadWordButton" class="btn secondary" type="button">Word</button>
+    <button id="downloadPdfButton" class="btn secondary" type="button">PDF</button>
+    <button id="clearButton" class="btn quiet" type="button">Clear all</button>
+</div>
+    
+<div class="status-box" role="status" aria-live="polite">
+    <i id="statusIndicator"></i>
+    <p id="statusMessage">Upload an image to get started.</p>
+</div>
+    
+<p class="privacy-note">Your image is processed in the browser using Tesseract.js.</p>
+</section>
+</main>
+    
+<footer>
+    <b>Photo Text Reader</b>
+    <span>Simple image-to-text conversion</span>
+</footer>
+</div>
+    
 <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
-
-<!-- PDF LIBRARY -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<!-- TESSERACT OCR LIBRARY -->
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <!-- APP JAVASCRIPT -->
-    <script src="script.js"></script>
+<script src="script.js"></script>
+    
 </body>
 </html>
