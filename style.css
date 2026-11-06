@@ -22,9 +22,20 @@ body {
     line-height: 1.55;
 }
 
-button, textarea, select {
+button,
+textarea,
+select {
     font: inherit;
 }
+
+button:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+    outline: 3px solid #7057d955;
+    outline-offset: 2px;
+}
+
 
 /* HEADER */
 
@@ -74,6 +85,7 @@ button, textarea, select {
     background: #38b58b;
 }
 
+
 /* PAGE */
 
 .page {
@@ -113,6 +125,7 @@ button, textarea, select {
     font-size: 14px;
 }
 
+
 /* MAIN LAYOUT */
 
 .workspace {
@@ -130,6 +143,7 @@ button, textarea, select {
     border-radius: 20px;
     box-shadow: var(--shadow);
 }
+
 
 /* PANEL HEADINGS */
 
@@ -168,6 +182,7 @@ button, textarea, select {
     font-weight: 800;
 }
 
+
 /* UPLOAD AREA */
 
 .dropzone {
@@ -194,9 +209,8 @@ button, textarea, select {
 }
 
 .dropzone.busy {
-    opacity: .55;
+    opacity: .6;
     cursor: not-allowed;
-    pointer-events: none;
 }
 
 .upload-icon {
@@ -231,12 +245,14 @@ button, textarea, select {
     font-weight: 700;
 }
 
+
 /* PREVIEW */
 
 .subhead {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
     margin: 19px 0 9px;
     font-size: 12px;
 }
@@ -261,6 +277,7 @@ button, textarea, select {
     border-radius: 13px;
 }
 
+
 /* EMPTY PREVIEW */
 
 .empty-preview {
@@ -277,22 +294,59 @@ button, textarea, select {
     font-size: 12px;
 }
 
-/* IMAGE PREVIEW AND ROTATION */
+
+/* IMAGE PREVIEW */
 
 #imagePreview {
     display: block;
-    width: auto;
-    height: auto;
     max-width: 100%;
     max-height: 320px;
-    object-fit: contain;
-    transform-origin: center center;
-    transition: transform .3s ease;
 }
 
 #imagePreview[hidden] {
     display: none;
 }
+
+/* Cropper.js */
+
+.preview-container .cropper-container {
+    max-width: 100%;
+    max-height: 340px;
+}
+
+.preview-container .cropper-wrap-box,
+.preview-container .cropper-canvas,
+.preview-container .cropper-drag-box,
+.preview-container .cropper-crop-box {
+    max-width: 100%;
+}
+
+.cropper-view-box {
+    outline: 2px solid var(--purple);
+    outline-color: var(--purple);
+}
+
+.cropper-line,
+.cropper-point {
+    background-color: var(--purple);
+}
+
+.cropper-point {
+    width: 9px;
+    height: 9px;
+    opacity: 1;
+}
+
+
+/* SELECTION INSTRUCTION */
+
+.selection-note {
+    margin: 9px 0 0;
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+}
+
 
 /* ROTATION BUTTONS */
 
@@ -301,6 +355,11 @@ button, textarea, select {
     gap: 9px;
     margin-top: 11px;
 }
+
+.rotation-buttons .btn {
+    flex: 1;
+}
+
 
 /* BUTTONS */
 
@@ -340,6 +399,7 @@ button, textarea, select {
     border-color: #c9c2ef;
 }
 
+
 /* OCR SETTINGS */
 
 .settings {
@@ -366,7 +426,8 @@ button, textarea, select {
 }
 
 .settings select:focus,
-#textOutput:focus {
+#textOutput:focus,
+.speech-section select:focus {
     border-color: var(--purple);
     box-shadow: 0 0 0 3px #7057d91a;
 }
@@ -377,7 +438,8 @@ button, textarea, select {
     font-size: 10px;
 }
 
-/* EXTRACT BUTTON */
+
+/* EXTRACT BUTTONS */
 
 .primary {
     width: 100%;
@@ -392,6 +454,12 @@ button, textarea, select {
 .primary:hover:not(:disabled) {
     filter: brightness(.96);
 }
+
+.selected-button {
+    width: 100%;
+    margin-top: 9px;
+}
+
 
 /* TEXT EDITOR */
 
@@ -429,6 +497,46 @@ button, textarea, select {
     color: #a6abbb;
 }
 
+
+/* TEXT TO SPEECH */
+
+.speech-section {
+    margin-top: 18px;
+    padding: 14px;
+    background: #f8f7ff;
+    border: 1px solid #ece8ff;
+    border-radius: 13px;
+}
+
+.speech-heading {
+    margin-top: 0;
+}
+
+.speech-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.speech-section label {
+    display: block;
+    margin-top: 13px;
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.speech-section select {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 10px;
+    color: var(--ink);
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+}
+
+
 /* EXPORT BUTTONS */
 
 .export-head {
@@ -453,9 +561,10 @@ button, textarea, select {
     border-color: #eee4e9;
 }
 
-.quiet:hover:not(:disabled) {
+.quiet:hover {
     background: #fff7fa;
 }
+
 
 /* STATUS */
 
@@ -504,6 +613,7 @@ button, textarea, select {
     font-size: 10px;
 }
 
+
 /* FOOTER */
 
 footer {
@@ -519,14 +629,6 @@ footer b {
     color: #777d94;
 }
 
-/* KEYBOARD ACCESSIBILITY */
-
-button:focus-visible,
-.dropzone:focus-visible,
-.brand:focus-visible {
-    outline: 3px solid #a99ae9;
-    outline-offset: 3px;
-}
 
 /* TABLET */
 
@@ -540,9 +642,11 @@ button:focus-visible,
     }
 }
 
+
 /* MOBILE */
 
 @media (max-width: 480px) {
+
     .topbar {
         min-height: 60px;
         padding: 0 16px;
@@ -576,17 +680,23 @@ button:focus-visible,
     .preview-container {
         min-height: 180px;
         max-height: 350px;
+        padding: 10px;
     }
 
-    #imagePreview {
-        max-height: 290px;
+    .preview-container .cropper-container {
+        max-height: 320px;
     }
 
     .rotation-buttons .btn {
         flex: 1;
+        padding: 9px 7px;
     }
 
     .result-buttons {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .speech-buttons {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
