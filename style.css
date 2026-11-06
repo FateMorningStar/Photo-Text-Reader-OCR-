@@ -125,9 +125,7 @@ a:focus-visible {
     font-size: 14px;
 }
 
-
 /* MAIN LAYOUT */
-
 .workspace {
     display: grid;
     grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
@@ -144,9 +142,7 @@ a:focus-visible {
     box-shadow: var(--shadow);
 }
 
-
 /* PANEL HEADINGS */
-
 .panel-head {
     display: flex;
     justify-content: space-between;
@@ -182,9 +178,7 @@ a:focus-visible {
     font-weight: 800;
 }
 
-
 /* UPLOAD AREA */
-
 .dropzone {
     min-height: 170px;
     padding: 22px 15px;
@@ -245,9 +239,7 @@ a:focus-visible {
     font-weight: 700;
 }
 
-
 /* PREVIEW */
-
 .subhead {
     display: flex;
     justify-content: space-between;
@@ -277,9 +269,7 @@ a:focus-visible {
     border-radius: 13px;
 }
 
-
 /* EMPTY PREVIEW */
-
 .empty-preview {
     display: flex;
     flex-direction: column;
@@ -294,9 +284,7 @@ a:focus-visible {
     font-size: 12px;
 }
 
-
 /* IMAGE PREVIEW */
-
 #imagePreview {
     display: block;
     max-width: 100%;
@@ -308,7 +296,6 @@ a:focus-visible {
 }
 
 /* Cropper.js */
-
 .preview-container .cropper-container {
     max-width: 100%;
     max-height: 340px;
@@ -337,9 +324,7 @@ a:focus-visible {
     opacity: 1;
 }
 
-
 /* SELECTION INSTRUCTION */
-
 .selection-note {
     margin: 9px 0 0;
     color: var(--muted);
@@ -347,9 +332,7 @@ a:focus-visible {
     text-align: center;
 }
 
-
 /* ROTATION BUTTONS */
-
 .rotation-buttons {
     display: flex;
     gap: 9px;
@@ -360,9 +343,7 @@ a:focus-visible {
     flex: 1;
 }
 
-
 /* BUTTONS */
-
 .btn {
     min-height: 40px;
     padding: 9px 13px;
@@ -399,9 +380,7 @@ a:focus-visible {
     border-color: #c9c2ef;
 }
 
-
 /* OCR SETTINGS */
-
 .settings {
     margin-top: 18px;
 }
@@ -440,7 +419,6 @@ a:focus-visible {
 
 
 /* EXTRACT BUTTONS */
-
 .primary {
     width: 100%;
     min-height: 46px;
@@ -462,7 +440,6 @@ a:focus-visible {
 
 
 /* TEXT EDITOR */
-
 .editor-meta {
     display: flex;
     justify-content: space-between;
@@ -499,7 +476,6 @@ a:focus-visible {
 
 
 /* TEXT TO SPEECH */
-
 .speech-section {
     margin-top: 18px;
     padding: 14px;
@@ -538,7 +514,6 @@ a:focus-visible {
 
 
 /* EXPORT BUTTONS */
-
 .export-head {
     margin-top: 19px;
 }
@@ -565,9 +540,7 @@ a:focus-visible {
     background: #fff7fa;
 }
 
-
 /* STATUS */
-
 .status-box {
     min-height: 42px;
     margin-top: 16px;
@@ -615,7 +588,6 @@ a:focus-visible {
 
 
 /* FOOTER */
-
 footer {
     display: flex;
     justify-content: space-between;
@@ -631,7 +603,6 @@ footer b {
 
 
 /* TABLET */
-
 @media (max-width: 820px) {
     .workspace {
         grid-template-columns: 1fr;
@@ -644,7 +615,6 @@ footer b {
 
 
 /* MOBILE */
-
 @media (max-width: 480px) {
 
     .topbar {
@@ -757,5 +727,119 @@ footer b {
 
     .preview-container .cropper-container {
         max-height: 320px;
+    }
+}
+
+/* MULTILINGUAL OCR AND SPEECH CONTROLS */
+.settings + .settings {
+    margin-top: 16px;
+}
+
+/* IMAGE SELECTION INSTRUCTIONS */
+.selection-note {
+    margin: 10px 0 0;
+    color: var(--muted);
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+/* SELECTED AREA BUTTON */
+.selected-button {
+    width: 100%;
+    min-height: 44px;
+    margin-top: 10px;
+    color: var(--purple);
+    background: #f2efff;
+    border: 1px solid #dcd5fa;
+}
+
+.selected-button:hover:not(:disabled) {
+    background: #eae5ff;
+}
+
+/* CROPper PREVIEW FIXES */
+[hidden] {
+    display: none !important;
+}
+
+.preview-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.preview-container .cropper-container {
+    max-width: 100%;
+}
+
+/* TEXT TO SPEECH */
+.speech-heading {
+    margin-top: 22px;
+}
+
+.speech-settings {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.speech-settings label {
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.speech-settings select {
+    min-width: 125px;
+    min-height: 38px;
+    padding: 7px 10px;
+    color: var(--ink);
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    font-size: 12px;
+}
+
+.speech-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.speech-buttons .primary {
+    width: auto;
+    min-height: 40px;
+    margin-top: 0;
+    box-shadow: none;
+}
+
+.speech-buttons .btn {
+    width: 100%;
+}
+
+.speech-buttons .btn:disabled {
+    opacity: .4;
+}
+
+/* MOBILE */
+@media (max-width: 480px) {
+
+    .speech-settings {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .speech-settings select {
+        width: 100%;
+    }
+
+    .speech-buttons {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .selection-note {
+        font-size: 10px;
     }
 }
