@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,194 +11,335 @@
     <!-- GOOGLE FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-    <!-- APP STYLES -->
-    <link rel="stylesheet" href="style.css?v=5">
 
-    <!-- CROPPER.JS STYLES -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- CROPPER.JS CSS -->
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"
     >
+
+    <!-- APP CSS -->
+    <link rel="stylesheet" href="style.css?v=5">
+
 </head>
 
 <body>
 
-<header class="topbar">
-    <a class="brand" href="#">
-        <span class="brand-mark">PT</span>
-        <span>Photo Text <b>Reader</b></span>
-    </a>
+    <!-- HEADER -->
 
-    <span class="top-note">
-        <i></i> OCR workspace
-    </span>
-</header>
+    <header class="topbar">
 
-<div class="page">
+        <a class="brand" href="#">
+            <span class="brand-mark">PT</span>
+            <span>Photo Text <b>Reader</b></span>
+        </a>
 
-    <section class="intro">
-        <small>IMAGE TO TEXT · OCR TOOL</small>
-        <h1>Turn a photo into <em>editable text.</em></h1>
-        <p>Upload a printed page, extract its text, listen to it, and export your result.</p>
-    </section>
+        <span class="top-note">
+            <i></i> OCR workspace
+        </span>
 
-    <main class="workspace">
+    </header>
 
-        <!-- IMAGE UPLOAD AND OCR -->
-        <section class="panel">
 
-            <div class="panel-head">
-                <div>
-                    <small>STEP 01</small>
-                    <h2>Add your image</h2>
-                </div>
+    <!-- MAIN PAGE -->
 
-                <span class="panel-icon">↥</span>
-            </div>
+    <div class="page">
 
-            <label for="imageInput" class="dropzone" id="dropzone">
-                <span class="upload-icon">↑</span>
-                <b>Choose an image to upload</b>
-                <span>or drag and drop it here</span>
-                <small>JPG · JPEG · PNG</small>
-            </label>
+        <!-- INTRODUCTION -->
 
-            <input
-                type="file"
-                id="imageInput"
-                accept="image/png,image/jpeg"
-                hidden
-            >
+        <section class="intro">
 
-            <div class="subhead">
-                <b>Image preview</b>
-                <span>Your selected image appears here</span>
-            </div>
+            <small>IMAGE TO TEXT · OCR TOOL</small>
 
-            <div class="preview-container">
+            <h1>
+                Turn a photo into <em>editable text.</em>
+            </h1>
 
-                <div class="empty-preview" id="emptyPreview">
-                    ▧
-                    <small>No image selected</small>
-                </div>
-
-                <img
-                    id="imagePreview"
-                    alt="Uploaded image preview"
-                    hidden
-                >
-
-            </div>
-
-            <p class="selection-note">
-                Drag the selection area over a word, sentence, or paragraph.
-                Resize it using the handles.
+            <p>
+                Upload a printed page, select a word or paragraph,
+                extract its text, then listen, edit, and export your result.
             </p>
-
-            <!-- IMAGE ROTATION -->
-            <div class="rotation-buttons">
-
-                <button
-                    id="rotateLeftButton"
-                    class="btn secondary"
-                    type="button"
-                    disabled
-                >
-                    ↶ Rotate left
-                </button>
-
-                <button
-                    id="rotateRightButton"
-                    class="btn secondary"
-                    type="button"
-                    disabled
-                >
-                    ↷ Rotate right
-                </button>
-
-            </div>
-
-            <!-- OCR SETTINGS -->
-            <div class="settings">
-
-                <label for="layoutMode">OCR layout mode</label>
-
-                <select id="layoutMode">
-                    <option value="3">Automatic page layout</option>
-                    <option value="6">Single text block</option>
-                    <option value="4">Single text column</option>
-                    <option value="11">Sparse / scattered text</option>
-                </select>
-
-                <p>
-                    Choose the option that best matches how text is arranged in your image.
-                </p>
-
-            </div>
-
-            <!-- FULL PAGE OCR -->
-            <button
-                id="extractButton"
-                class="btn primary"
-                type="button"
-                disabled
-            >
-                ✦ &nbsp;Extract full page
-            </button>
-
-            <!-- SELECTED AREA OCR -->
-            <button
-                id="extractSelectedButton"
-                class="btn secondary selected-button"
-                type="button"
-                disabled
-            >
-                ▣ &nbsp;Extract selected area
-            </button>
 
         </section>
 
 
-        <!-- EXTRACTED TEXT -->
-        <section class="panel">
+        <!-- WORKSPACE -->
 
-            <div class="panel-head">
-                <div>
-                    <small>STEP 02</small>
-                    <h2>Review your text</h2>
+        <main class="workspace">
+
+            <!-- IMAGE UPLOAD AND SELECTION PANEL -->
+            <section class="panel">
+
+                <div class="panel-head">
+
+                    <div>
+                        <small>STEP 01</small>
+                        <h2>Add your image</h2>
+                    </div>
+
+                    <span class="panel-icon">↥</span>
+
                 </div>
 
-                <span class="panel-icon letters">Aa</span>
-            </div>
 
-            <div class="editor-meta">
-                <b><i></i> Editable result</b>
-                <span id="characterCount">0 characters</span>
-            </div>
+                <!-- IMAGE UPLOAD -->
 
-            <textarea
-                id="textOutput"
-                spellcheck="false"
-                placeholder="Your extracted text will appear here...
+                <label
+                    for="imageInput"
+                    class="dropzone"
+                    id="dropzone"
+                >
 
-Upload an image and select an extraction option to get started."
-            ></textarea>
+                    <span class="upload-icon">↑</span>
+
+                    <b>Choose an image to upload</b>
+
+                    <span>or drag and drop it here</span>
+
+                    <small>JPG · JPEG · PNG</small>
+
+                </label>
 
 
-            <!-- TEXT TO SPEECH -->
-            <div class="speech-section">
+                <input
+                    type="file"
+                    id="imageInput"
+                    accept="image/png,image/jpeg"
+                    hidden
+                >
+
+
+                <!-- IMAGE PREVIEW -->
+
+                <div class="subhead">
+
+                    <b>Image preview</b>
+
+                    <span>
+                        Select the text you want to extract
+                    </span>
+
+                </div>
+
+
+                <div class="preview-container">
+
+                    <div
+                        class="empty-preview"
+                        id="emptyPreview"
+                    >
+                        ▧
+
+                        <small>No image selected</small>
+                    </div>
+
+
+                    <img
+                        id="imagePreview"
+                        alt="Uploaded image preview"
+                        hidden
+                    >
+
+                </div>
+
+
+                <!-- SELECTION INSTRUCTIONS -->
+
+                <p class="selection-note">
+                    Drag the selection area over a word, sentence,
+                    or paragraph. Resize it using the handles.
+                </p>
+
+
+                <!-- IMAGE ROTATION -->
+
+                <div class="rotation-buttons">
+
+                    <button
+                        id="rotateLeftButton"
+                        class="btn secondary"
+                        type="button"
+                        disabled
+                    >
+                        ↶ Rotate left
+                    </button>
+
+
+                    <button
+                        id="rotateRightButton"
+                        class="btn secondary"
+                        type="button"
+                        disabled
+                    >
+                        ↷ Rotate right
+                    </button>
+
+                </div>
+
+
+                <!-- OCR SETTINGS -->
+
+                <div class="settings">
+
+                    <label for="layoutMode">
+                        OCR layout mode
+                    </label>
+
+                    <select id="layoutMode">
+
+                        <option value="3">
+                            Automatic page layout
+                        </option>
+
+                        <option value="6">
+                            Single text block
+                        </option>
+
+                        <option value="4">
+                            Single text column
+                        </option>
+
+                        <option value="11">
+                            Sparse / scattered text
+                        </option>
+
+                    </select>
+
+                    <p>
+                        Choose the option that best matches
+                        how text is arranged in your image.
+                    </p>
+
+                </div>
+
+
+                <!-- FULL PAGE EXTRACTION -->
+
+                <button
+                    id="extractButton"
+                    class="btn primary"
+                    type="button"
+                    disabled
+                >
+                    ✦ &nbsp;Extract full page
+                </button>
+
+
+                <!-- SELECTED AREA EXTRACTION -->
+
+                <button
+                    id="extractSelectedButton"
+                    class="btn selected-button"
+                    type="button"
+                    disabled
+                >
+                    ▣ &nbsp;Extract selected area
+                </button>
+
+            </section>
+
+
+
+            
+            <!-- TEXT EDITOR AND OUTPUT PANEL -->
+            
+
+            <section class="panel">
+
+                <div class="panel-head">
+
+                    <div>
+                        <small>STEP 02</small>
+                        <h2>Review your text</h2>
+                    </div>
+
+                    <span class="panel-icon letters">Aa</span>
+
+                </div>
+
+
+                <!-- TEXT INFORMATION -->
+
+                <div class="editor-meta">
+
+                    <b>
+                        <i></i> Editable result
+                    </b>
+
+                    <span id="characterCount">
+                        0 characters
+                    </span>
+
+                </div>
+
+
+                <!-- TEXT EDITOR -->
+
+                <textarea
+                    id="textOutput"
+                    spellcheck="false"
+                    placeholder="Your extracted text will appear here...
+
+Upload an image and select Extract text to get started."
+                ></textarea>
+
+
+
+                
+                <!-- TEXT TO SPEECH  -->
 
                 <div class="subhead speech-heading">
-                    <b>Listen to your text</b>
-                    <span>Text-to-Speech</span>
+
+                    <b>Text-to-Speech</b>
+
+                    <span>Listen to your extracted text</span>
+
                 </div>
+
+
+                <!-- SPEECH SPEED -->
+
+                <div class="speech-settings">
+
+                    <label for="speechRate">
+                        Reading speed
+                    </label>
+
+                    <select id="speechRate">
+
+                        <option value="0.75">
+                            Slow
+                        </option>
+
+                        <option value="1" selected>
+                            Normal
+                        </option>
+
+                        <option value="1.25">
+                            Fast
+                        </option>
+
+                        <option value="1.5">
+                            Very fast
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- SPEECH BUTTONS -->
 
                 <div class="speech-buttons">
 
                     <button
                         id="speakButton"
-                        class="btn secondary"
+                        class="btn primary"
                         type="button"
                     >
                         ▶ Read aloud
@@ -210,7 +351,7 @@ Upload an image and select an extraction option to get started."
                         type="button"
                         disabled
                     >
-                        ⏸ Pause
+                        Ⅱ Pause
                     </button>
 
                     <button
@@ -232,108 +373,119 @@ Upload an image and select an extraction option to get started."
                     </button>
 
                 </div>
+                
+                <!-- EXPORT OPTIONS -->
+                <div class="subhead export-head">
 
-                <label for="speechRate">Speech speed</label>
+                    <b>Export your text</b>
 
-                <select id="speechRate">
-                    <option value="0.75">Slow</option>
-                    <option value="1" selected>Normal</option>
-                    <option value="1.25">Fast</option>
-                </select>
+                    <span>Choose a format</span>
 
-            </div>
+                </div>
 
 
-            <!-- EXPORT -->
-            <div class="subhead export-head">
-                <b>Export your text</b>
-                <span>Choose a format</span>
-            </div>
+                <div class="result-buttons">
 
-            <div class="result-buttons">
+                    <button
+                        id="copyButton"
+                        class="btn secondary"
+                        type="button"
+                    >
+                        Copy text
+                    </button>
 
-                <button
-                    id="copyButton"
-                    class="btn secondary"
-                    type="button"
+
+                    <button
+                        id="downloadButton"
+                        class="btn secondary"
+                        type="button"
+                    >
+                        TXT
+                    </button>
+
+
+                    <button
+                        id="downloadWordButton"
+                        class="btn secondary"
+                        type="button"
+                    >
+                        Word
+                    </button>
+
+
+                    <button
+                        id="downloadPdfButton"
+                        class="btn secondary"
+                        type="button"
+                    >
+                        PDF
+                    </button>
+
+
+                    <button
+                        id="clearButton"
+                        class="btn quiet"
+                        type="button"
+                    >
+                        Clear all
+                    </button>
+
+                </div>
+                
+                <!-- STATUS MESSAGE -->
+                <div
+                    class="status-box"
+                    role="status"
+                    aria-live="polite"
                 >
-                    Copy text
-                </button>
 
-                <button
-                    id="downloadButton"
-                    class="btn secondary"
-                    type="button"
-                >
-                    TXT
-                </button>
+                    <i id="statusIndicator"></i>
 
-                <button
-                    id="downloadWordButton"
-                    class="btn secondary"
-                    type="button"
-                >
-                    Word
-                </button>
+                    <p id="statusMessage">
+                        Upload an image to get started.
+                    </p>
 
-                <button
-                    id="downloadPdfButton"
-                    class="btn secondary"
-                    type="button"
-                >
-                    PDF
-                </button>
+                </div>
 
-                <button
-                    id="clearButton"
-                    class="btn quiet"
-                    type="button"
-                >
-                    Clear all
-                </button>
-
-            </div>
-
-
-            <!-- STATUS -->
-            <div class="status-box" role="status" aria-live="polite">
-                <i id="statusIndicator"></i>
-
-                <p id="statusMessage">
-                    Upload an image to get started.
+                <!-- PRIVACY NOTE -->
+                <p class="privacy-note">
+                    Your image is processed in the browser
+                    using Tesseract.js.
                 </p>
-            </div>
 
-            <p class="privacy-note">
-                Your image is processed in the browser using Tesseract.js.
-            </p>
+            </section>
 
-        </section>
+        </main>
 
-    </main>
+        <!-- FOOTER -->
+        <footer>
 
-    <footer>
-        <b>Photo Text Reader</b>
-        <span>Simple image-to-text conversion</span>
-    </footer>
+            <b>Photo Text Reader</b>
 
-</div>
+            <span>
+                Simple image-to-text conversion
+            </span>
 
+        </footer>
 
-<!-- WORD DOCUMENT LIBRARY -->
-<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+    </div>
 
-<!-- PDF LIBRARY -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- EXTERNAL JAVASCRIPT LIBRARIES -->
+    <!-- CROPPER.JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
-<!-- IMAGE SELECTION LIBRARY -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+    <!-- WORD DOCUMENT LIBRARY -->
+    <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 
-<!-- OCR LIBRARY -->
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <!-- PDF LIBRARY -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<!-- APP JAVASCRIPT -->
-<script src="script.js?v=5"></script>
+    <!-- TESSERACT OCR LIBRARY -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <!-- APPLICATION JAVASCRIPT -->
+    <script src="script.js?v=5"></script>
 
 </body>
+
 </html>
