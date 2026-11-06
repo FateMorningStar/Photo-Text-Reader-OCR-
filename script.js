@@ -1,30 +1,68 @@
-// Photo Text Reader - script.js
-// HTML elements
+// Photo Text Reader - redesigned interface logic
+
 const imageInput = document.getElementById("imageInput");
 const imagePreview = document.getElementById("imagePreview");
+const emptyPreview = document.getElementById("emptyPreview");
+const dropzone = document.getElementById("dropzone");
+
 const extractButton = document.getElementById("extractButton");
 const textOutput = document.getElementById("textOutput");
 const layoutMode = document.getElementById("layoutMode");
+
 const copyButton = document.getElementById("copyButton");
 const downloadButton = document.getElementById("downloadButton");
 const downloadWordButton = document.getElementById("downloadWordButton");
 const downloadPdfButton = document.getElementById("downloadPdfButton");
 const clearButton = document.getElementById("clearButton");
-const statusMessage = document.getElementById("statusMessage");
 
-// State
+const statusMessage = document.getElementById("statusMessage");
+const statusIndicator = document.getElementById("statusIndicator");
+const characterCount = document.getElementById("characterCount");
+
+const rotateLeftButton = document.getElementById("rotateLeftButton");
+const rotateRightButton = document.getElementById("rotateRightButton");
+
+// APPLICATION STATE
+
 let selectedImage = null;
 let previewURL = null;
 let rotation = 0;
+let isProcessing = false;
 
-// Upload and preview image
-imageInput.addEventListener("change", function () {
-    const file = imageInput.files[0];
+
+// STATUS MESSAGE
+
+function setStatus(message, type = "normal") {
+    statusMessage.textContent = message;
+
+    statusIndicator.className = "";
+
+    if (type !== "normal") {
+        statusIndicator.classList.add(type);
+    }
+}
+
+
+// CHARACTER COUNTER
+
+function updateCount() {
+    const count = textOutput.value.length;
+
+    characterCount.textContent =
+        `${count.toLocaleString()} ${count === 1 ? "character" : "characters"}`;
+}
+
+textOutput.addEventListener("input", updateCount);
+
+
+// IMAGE UPLOAD
+
+function setImage(file) {
 
     if (!file) return;
 
     if (!["image/png", "image/jpeg"].includes(file.type)) {
-        statusMessage.textContent = "Please upload a JPG or PNG image.";
+        setStatus("Please upload a JPG or PNG image.", "error");
         imageInput.value = "";
         return;
     }
@@ -37,44 +75,125 @@ imageInput.addEventListener("change", function () {
     }
 
     previewURL = URL.createObjectURL(file);
+
     imagePreview.src = previewURL;
     imagePreview.style.transform = "rotate(0deg)";
-    imagePreview.style.display = "block";
+    imagePreview.hidden = false;
+
+    emptyPreview.hidden = true;
 
     textOutput.value = "";
+    updateCount();
+
     extractButton.disabled = false;
 
-    statusMessage.textContent = "Image uploaded successfully.";
+    rotateLeftButton.disabled = false;
+    rotateRightButton.disabled = false;
+
+    setStatus(
+        "Image ready. Choose a layout mode, then extract the text.",
+        "success"
+    );
+}
+
+imageInput.addEventListener("change", function () {
+    setImage(imageInput.files[0]);
 });
 
-// Rotate image
+
+// IMAGE ROTATION
+
 function rotateImage(degrees) {
+
     if (!selectedImage) {
-        statusMessage.textContent = "Please upload an image first.";
+        setStatus("Please upload an image first.", "error");
         return;
     }
 
-    rotation = (rotation + degrees) % 360;
+    rotation = (rotation + degrees + 360) % 360;
 
-    imagePreview.style.transform = `rotate(${rotation}deg)`;
+    imagePreview.style.transform =
+        `rotate(${rotation}deg)`;
 }
 
-// Prepare image for OCR
+rotateLeftButton.addEventListener("click", function () {
+    rotateImage(-90);
+});
+
+rotateRightButton.addEventListener("click", function () {
+    rotateImage(90);
+});
+
+
+// DRAG AND DROP UPLOAD
+
+dropzone.addEventListener("dragover", function (event) {
+    event.preventDefault();
+    dropzone.classList.add("drag-over");
+});
+
+dropzone.addEventListener("dragleave", function () {
+    dropzone.classList.remove("drag-over");
+});
+
+dropzone.addEventListener("drop", function (event) {
+
+    event.preventDefault();
+
+    dropzone.classList.remove("drag-over");
+
+    const file = event.dataTransfer.files[0];
+
+    if (file) {
+        setImage(file);
+
+        try {
+            const transfer = new DataTransfer();
+
+            transfer.items.add(file);
+
+            imageInput.files = transfer.files;
+
+        } catch (error) {
+            console.warn("Unable to synchronize file input.", error);
+        }
+    }
+});
+
+
+// IMAGE PREPROCESSING
+
 function preprocessImage(file) {
+
     return new Promise((resolve, reject) => {
+
         const image = new Image();
+        const url = URL.createObjectURL(file);
 
         image.onload = function () {
+
             const canvas = document.createElement("canvas");
             const context = canvas.getContext("2d");
 
-            const isSideways = rotation === 90 || rotation === 270;
+            const sideways =
+                rotation === 90 || rotation === 270;
 
-            canvas.width = isSideways ? image.height : image.width;
-            canvas.height = isSideways ? image.width : image.height;
+            canvas.width = sideways
+                ? image.height
+                : image.width;
 
-            context.translate(canvas.width / 2, canvas.height / 2);
-            context.rotate((rotation * Math.PI) / 180);
+            canvas.height = sideways
+                ? image.width
+                : image.height;
+
+            context.translate(
+                canvas.width / 2,
+                canvas.height / 2
+            );
+
+            context.rotate(
+                (rotation * Math.PI) / 180
+            );
 
             context.drawImage(
                 image,
@@ -82,124 +201,241 @@ function preprocessImage(file) {
                 -image.height / 2
             );
 
+            URL.revokeObjectURL(url);
+
             resolve(canvas);
-            URL.revokeObjectURL(image.src);
         };
 
         image.onerror = function () {
-            reject(new Error("Unable to load the image."));
+
+            URL.revokeObjectURL(url);
+
+            reject(new Error("Unable to load image."));
         };
 
-        image.src = URL.createObjectURL(file);
+        image.src = url;
     });
 }
 
-// Extract text using Tesseract.js
+
+// OCR TEXT EXTRACTION
+
 extractButton.addEventListener("click", async function () {
-    if (!selectedImage) {
-        statusMessage.textContent = "Please upload an image first.";
+
+    if (!selectedImage || isProcessing) {
+
+        if (!selectedImage) {
+            setStatus("Please upload an image first.", "error");
+        }
+
         return;
     }
 
+    isProcessing = true;
+
     extractButton.disabled = true;
-    statusMessage.textContent = "Preparing image...";
+    extractButton.textContent = "Extracting…";
+
+    setStatus("Preparing image…", "busy");
 
     try {
-        const processedImage = await preprocessImage(selectedImage);
 
-        statusMessage.textContent = "Extracting text...";
+        const processedImage =
+            await preprocessImage(selectedImage);
 
         const result = await Tesseract.recognize(
             processedImage,
             "eng",
             {
                 logger: function (info) {
+
                     if (info.status === "recognizing text") {
-                        const progress = Math.round(info.progress * 100);
-                        statusMessage.textContent =
-                            `Extracting text: ${progress}%`;
+
+                        const progress =
+                            Math.round(info.progress * 100);
+
+                        setStatus(
+                            `Recognizing text: ${progress}%`,
+                            "busy"
+                        );
                     }
-                }
+                },
+
+                // Use the selected OCR layout mode.
+                tessedit_pageseg_mode: Number(layoutMode.value),
+
+                preserve_interword_spaces: "1"
             }
         );
 
-        textOutput.value = result.data.text.trim();
+        textOutput.value =
+            (result.data.text || "").trim();
+
+        updateCount();
 
         if (textOutput.value) {
-            statusMessage.textContent = "Text extraction completed.";
+
+            setStatus(
+                "Text extraction completed. Review the result for possible OCR errors.",
+                "success"
+            );
+
         } else {
-            statusMessage.textContent =
-                "No text was detected. Try another image.";
+
+            setStatus(
+                "No text detected. Try a clearer image or another layout mode.",
+                "error"
+            );
         }
+
     } catch (error) {
+
         console.error(error);
-        statusMessage.textContent =
-            "Text extraction failed. Please try again.";
+
+        setStatus(
+            "Text extraction failed. Please try again.",
+            "error"
+        );
+
     } finally {
-        extractButton.disabled = false;
+
+        isProcessing = false;
+
+        extractButton.disabled = !selectedImage;
+
+        extractButton.innerHTML =
+            "✦ &nbsp;Extract text";
     }
 });
 
-// Copy extracted or edited text
+
+// COPY TEXT
+
 copyButton.addEventListener("click", async function () {
+
     const text = textOutput.value;
 
     if (!text.trim()) {
-        statusMessage.textContent = "There is no text to copy.";
+        setStatus("There is no text to copy.", "error");
         return;
     }
 
     try {
+
         await navigator.clipboard.writeText(text);
-        statusMessage.textContent = "Text copied to clipboard.";
+
+        setStatus(
+            "Text copied to clipboard.",
+            "success"
+        );
+
     } catch (error) {
+
+        textOutput.focus();
         textOutput.select();
 
         const copied = document.execCommand("copy");
 
-        statusMessage.textContent = copied
-            ? "Text copied to clipboard."
-            : "Unable to copy text.";
+        setStatus(
+            copied
+                ? "Text copied to clipboard."
+                : "Unable to copy text.",
+            copied ? "success" : "error"
+        );
     }
 });
 
-// Download as TXT
-downloadButton.addEventListener("click", function () {
-    const text = getTextForDownload();
 
-    if (text === null) return;
+// GET TEXT FOR DOWNLOAD
 
-    const blob = new Blob([text], {
-        type: "text/plain;charset=utf-8"
-    });
+function getText() {
 
-    const downloadURL = URL.createObjectURL(blob);
+    const text = textOutput.value.trim();
+
+    if (!text) {
+
+        setStatus(
+            "There is no text to download.",
+            "error"
+        );
+
+        return null;
+    }
+
+    return text;
+}
+
+
+// DOWNLOAD HELPER
+
+function downloadBlob(blob, filename) {
+
+    const url = URL.createObjectURL(blob);
+
     const link = document.createElement("a");
 
-    link.href = downloadURL;
-    link.download = "extracted-text.txt";
+    link.href = url;
+    link.download = filename;
 
     document.body.appendChild(link);
+
     link.click();
     link.remove();
 
-    setTimeout(() => {
-        URL.revokeObjectURL(downloadURL);
+    setTimeout(function () {
+        URL.revokeObjectURL(url);
     }, 1000);
+}
 
-    statusMessage.textContent = "TXT file downloaded.";
+
+// DOWNLOAD TXT
+
+downloadButton.addEventListener("click", function () {
+
+    const text = getText();
+
+    if (text === null) return;
+
+    const blob = new Blob(
+        [text],
+        { type: "text/plain;charset=utf-8" }
+    );
+
+    downloadBlob(
+        blob,
+        "extracted-text.txt"
+    );
+
+    setStatus(
+        "TXT file downloaded.",
+        "success"
+    );
 });
 
-// Download as Word (.docx)
+
+// DOWNLOAD WORD
+
 downloadWordButton.addEventListener("click", async function () {
-    const text = getTextForDownload();
+
+    const text = getText();
 
     if (text === null) return;
 
     try {
-        const { Document, Paragraph, TextRun, Packer } = window.docx;
 
-        const paragraphs = text.split("\n").map(line => {
+        if (!window.docx) {
+            throw new Error("Word library unavailable.");
+        }
+
+        const {
+            Document,
+            Paragraph,
+            TextRun,
+            Packer
+        } = window.docx;
+
+        const paragraphs = text.split("\n").map(function (line) {
+
             return new Paragraph({
                 children: [
                     new TextRun(line)
@@ -208,6 +444,7 @@ downloadWordButton.addEventListener("click", async function () {
         });
 
         const documentFile = new Document({
+
             sections: [
                 {
                     properties: {},
@@ -217,91 +454,120 @@ downloadWordButton.addEventListener("click", async function () {
         });
 
         const blob = await Packer.toBlob(documentFile);
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
 
-        link.href = url;
-        link.download = "extracted-text.docx";
+        downloadBlob(
+            blob,
+            "extracted-text.docx"
+        );
 
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+        setStatus(
+            "Word document downloaded.",
+            "success"
+        );
 
-        setTimeout(() => {
-            URL.revokeObjectURL(url);
-        }, 1000);
-
-        statusMessage.textContent = "Word document downloaded.";
     } catch (error) {
+
         console.error(error);
-        statusMessage.textContent =
-            "Unable to create the Word document.";
+
+        setStatus(
+            "Unable to create the Word document. Check your connection.",
+            "error"
+        );
     }
 });
 
-// Download as PDF
+
+// DOWNLOAD PDF
+
 downloadPdfButton.addEventListener("click", function () {
-    const text = getTextForDownload();
+
+    const text = getText();
 
     if (text === null) return;
 
     try {
+
+        if (!window.jspdf) {
+            throw new Error("PDF library unavailable.");
+        }
+
         const { jsPDF } = window.jspdf;
+
         const pdf = new jsPDF();
 
-        const lines = pdf.splitTextToSize(text, 180);
+        const lines =
+            pdf.splitTextToSize(text, 180);
+
         let y = 15;
 
-        lines.forEach(line => {
+        lines.forEach(function (line) {
+
             if (y > 280) {
                 pdf.addPage();
                 y = 15;
             }
 
             pdf.text(line, 15, y);
+
             y += 7;
         });
 
         pdf.save("extracted-text.pdf");
 
-        statusMessage.textContent = "PDF document downloaded.";
+        setStatus(
+            "PDF document downloaded.",
+            "success"
+        );
+
     } catch (error) {
+
         console.error(error);
-        statusMessage.textContent =
-            "Unable to create the PDF document.";
+
+        setStatus(
+            "Unable to create the PDF document. Check your connection.",
+            "error"
+        );
     }
 });
 
-// Get text for download
-function getTextForDownload() {
-    const text = textOutput.value.trim();
 
-    if (!text) {
-        statusMessage.textContent = "There is no text to download.";
-        return null;
-    }
+// CLEAR EVERYTHING
 
-    return text;
-}
-
-// Clear everything
 clearButton.addEventListener("click", function () {
+
     imageInput.value = "";
-    imagePreview.src = "";
-    imagePreview.style.display = "none";
+
+    imagePreview.removeAttribute("src");
+    imagePreview.hidden = true;
+
+    emptyPreview.hidden = false;
+
     imagePreview.style.transform = "rotate(0deg)";
 
     textOutput.value = "";
+    updateCount();
 
     selectedImage = null;
     rotation = 0;
 
     if (previewURL) {
+
         URL.revokeObjectURL(previewURL);
+
         previewURL = null;
     }
 
     extractButton.disabled = true;
 
-    statusMessage.textContent = "Cleared.";
+    rotateLeftButton.disabled = true;
+    rotateRightButton.disabled = true;
+
+    setStatus(
+        "Cleared. Upload another image to begin."
+    );
 });
+
+
+// INITIALIZE CHARACTER COUNTER
+
+updateCount();
