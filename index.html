@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,11 +8,19 @@
 
     <title>Photo Text Reader</title>
 
+    <!-- GOOGLE FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 
+    <!-- APP STYLES -->
     <link rel="stylesheet" href="style.css?v=5">
+
+    <!-- CROPPER.JS STYLES -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"
+    >
 </head>
 
 <body>
@@ -32,12 +41,12 @@
     <section class="intro">
         <small>IMAGE TO TEXT · OCR TOOL</small>
         <h1>Turn a photo into <em>editable text.</em></h1>
-        <p>Upload a printed page, extract its text, then review and export your result.</p>
+        <p>Upload a printed page, extract its text, listen to it, and export your result.</p>
     </section>
 
     <main class="workspace">
 
-        <!-- IMAGE UPLOAD SECTION -->
+        <!-- IMAGE UPLOAD AND OCR -->
         <section class="panel">
 
             <div class="panel-head">
@@ -83,7 +92,12 @@
 
             </div>
 
-            <!-- ROTATION BUTTONS -->
+            <p class="selection-note">
+                Drag the selection area over a word, sentence, or paragraph.
+                Resize it using the handles.
+            </p>
+
+            <!-- IMAGE ROTATION -->
             <div class="rotation-buttons">
 
                 <button
@@ -124,18 +138,30 @@
 
             </div>
 
+            <!-- FULL PAGE OCR -->
             <button
                 id="extractButton"
                 class="btn primary"
                 type="button"
                 disabled
             >
-                ✦ &nbsp;Extract text
+                ✦ &nbsp;Extract full page
+            </button>
+
+            <!-- SELECTED AREA OCR -->
+            <button
+                id="extractSelectedButton"
+                class="btn secondary selected-button"
+                type="button"
+                disabled
+            >
+                ▣ &nbsp;Extract selected area
             </button>
 
         </section>
 
-        <!-- EXTRACTED TEXT SECTION -->
+
+        <!-- EXTRACTED TEXT -->
         <section class="panel">
 
             <div class="panel-head">
@@ -157,9 +183,69 @@
                 spellcheck="false"
                 placeholder="Your extracted text will appear here...
 
-Upload an image and select Extract text to get started."
+Upload an image and select an extraction option to get started."
             ></textarea>
 
+
+            <!-- TEXT TO SPEECH -->
+            <div class="speech-section">
+
+                <div class="subhead speech-heading">
+                    <b>Listen to your text</b>
+                    <span>Text-to-Speech</span>
+                </div>
+
+                <div class="speech-buttons">
+
+                    <button
+                        id="speakButton"
+                        class="btn secondary"
+                        type="button"
+                    >
+                        ▶ Read aloud
+                    </button>
+
+                    <button
+                        id="pauseButton"
+                        class="btn secondary"
+                        type="button"
+                        disabled
+                    >
+                        ⏸ Pause
+                    </button>
+
+                    <button
+                        id="resumeButton"
+                        class="btn secondary"
+                        type="button"
+                        disabled
+                    >
+                        ▶ Resume
+                    </button>
+
+                    <button
+                        id="stopButton"
+                        class="btn secondary"
+                        type="button"
+                        disabled
+                    >
+                        ■ Stop
+                    </button>
+
+                </div>
+
+                <label for="speechRate">Speech speed</label>
+
+                <select id="speechRate">
+                    <option value="0.75">Slow</option>
+                    <option value="1" selected>Normal</option>
+                    <option value="1.25">Fast</option>
+                </select>
+
+            </div>
+
+
+            <!-- EXPORT -->
             <div class="subhead export-head">
                 <b>Export your text</b>
                 <span>Choose a format</span>
@@ -167,30 +253,53 @@ Upload an image and select Extract text to get started."
 
             <div class="result-buttons">
 
-                <button id="copyButton" class="btn secondary" type="button">
+                <button
+                    id="copyButton"
+                    class="btn secondary"
+                    type="button"
+                >
                     Copy text
                 </button>
 
-                <button id="downloadButton" class="btn secondary" type="button">
+                <button
+                    id="downloadButton"
+                    class="btn secondary"
+                    type="button"
+                >
                     TXT
                 </button>
 
-                <button id="downloadWordButton" class="btn secondary" type="button">
+                <button
+                    id="downloadWordButton"
+                    class="btn secondary"
+                    type="button"
+                >
                     Word
                 </button>
 
-                <button id="downloadPdfButton" class="btn secondary" type="button">
+                <button
+                    id="downloadPdfButton"
+                    class="btn secondary"
+                    type="button"
+                >
                     PDF
                 </button>
 
-                <button id="clearButton" class="btn quiet" type="button">
+                <button
+                    id="clearButton"
+                    class="btn quiet"
+                    type="button"
+                >
                     Clear all
                 </button>
 
             </div>
 
+
+            <!-- STATUS -->
             <div class="status-box" role="status" aria-live="polite">
                 <i id="statusIndicator"></i>
+
                 <p id="statusMessage">
                     Upload an image to get started.
                 </p>
@@ -211,13 +320,17 @@ Upload an image and select Extract text to get started."
 
 </div>
 
+
 <!-- WORD DOCUMENT LIBRARY -->
 <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 
 <!-- PDF LIBRARY -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<!-- TESSERACT OCR LIBRARY -->
+<!-- IMAGE SELECTION LIBRARY -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+<!-- OCR LIBRARY -->
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <!-- APP JAVASCRIPT -->
