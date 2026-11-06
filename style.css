@@ -1,3 +1,4 @@
+
 :root {
     --ink: #20243a;
     --muted: #777d94;
@@ -22,16 +23,14 @@ body {
     line-height: 1.55;
 }
 
-button,
-textarea,
-select {
+button, textarea, select {
     font: inherit;
 }
 
 /* HEADER */
 
 .topbar {
-    height: 70px;
+    min-height: 70px;
     padding: 0 max(5vw, 22px);
     display: flex;
     align-items: center;
@@ -76,7 +75,7 @@ select {
     background: #38b58b;
 }
 
-/* PAGE INTRODUCTION */
+/* PAGE */
 
 .page {
     width: min(1160px, calc(100% - 40px));
@@ -245,9 +244,9 @@ select {
 
 .preview-container {
     width: 100%;
-    min-height: 190px;
-    max-height: 300px;
-    padding: 12px;
+    min-height: 220px;
+    max-height: 380px;
+    padding: 18px;
     overflow: auto;
     display: flex;
     justify-content: center;
@@ -256,6 +255,8 @@ select {
     border: 1px solid var(--line);
     border-radius: 13px;
 }
+
+/* EMPTY PREVIEW */
 
 .empty-preview {
     display: flex;
@@ -271,25 +272,32 @@ select {
     font-size: 12px;
 }
 
+/* IMAGE PREVIEW AND ROTATION */
+
 #imagePreview {
     display: block;
+    width: auto;
+    height: auto;
     max-width: 100%;
-    max-height: 270px;
+    max-height: 320px;
     object-fit: contain;
-    transition: transform .2s;
+    transform-origin: center center;
+    transition: transform .3s ease;
 }
 
 #imagePreview[hidden] {
     display: none;
 }
 
-/* BUTTONS */
+/* ROTATION BUTTONS */
 
 .rotation-buttons {
     display: flex;
     gap: 9px;
     margin-top: 11px;
 }
+
+/* BUTTONS */
 
 .btn {
     min-height: 40px;
@@ -522,7 +530,7 @@ footer b {
 
 @media (max-width: 480px) {
     .topbar {
-        height: 60px;
+        min-height: 60px;
         padding: 0 16px;
     }
 
@@ -552,7 +560,12 @@ footer b {
     }
 
     .preview-container {
-        min-height: 160px;
+        min-height: 180px;
+        max-height: 350px;
+    }
+
+    #imagePreview {
+        max-height: 290px;
     }
 
     .rotation-buttons .btn {
