@@ -10,6 +10,7 @@ const extractSelectedButton = document.getElementById("extractSelectedButton");
 
 const textOutput = document.getElementById("textOutput");
 const layoutMode = document.getElementById("layoutMode");
+const ocrLanguage = document.getElementById("ocrLanguage");
 
 const copyButton = document.getElementById("copyButton");
 const downloadButton = document.getElementById("downloadButton");
@@ -34,19 +35,25 @@ const speechRate = document.getElementById("speechRate");
 // APPLICATION STATE
 let selectedImage = null;
 let previewURL = null;
-
 let rotation = 0;
 let isProcessing = false;
-
 let cropper = null;
-let currentUtterance = null;
 let speechSession = 0;
+
+
+// SPEECH LANGUAGE MAPPING
+const speechLanguages = {
+    eng: "en-US",
+    chi_sim: "zh-CN",
+    chi_tra: "zh-TW",
+    jpn: "ja-JP",
+    kor: "ko-KR"
+};
+
 
 // STATUS MESSAGE
 function setStatus(message, type = "normal") {
-
     statusMessage.textContent = message;
-
     statusIndicator.className = "";
 
     if (type !== "normal") {
@@ -54,9 +61,9 @@ function setStatus(message, type = "normal") {
     }
 }
 
+
 // CHARACTER COUNTER
 function updateCount() {
-
     const count = textOutput.value.length;
 
     characterCount.textContent =
@@ -65,29 +72,22 @@ function updateCount() {
 
 textOutput.addEventListener("input", updateCount);
 
+
 // PROCESSING CONTROLS
 function setProcessingState(processing) {
-
     isProcessing = processing;
 
     imageInput.disabled = processing;
     layoutMode.disabled = processing;
+    ocrLanguage.disabled = processing;
 
-    extractButton.disabled =
-        processing || !selectedImage;
+    extractButton.disabled = processing || !selectedImage;
+    extractSelectedButton.disabled = processing || !cropper;
 
-    extractSelectedButton.disabled =
-        processing || !cropper;
-
-    rotateLeftButton.disabled =
-        processing || !cropper;
-
-    rotateRightButton.disabled =
-        processing || !cropper;
+    rotateLeftButton.disabled = processing || !cropper;
+    rotateRightButton.disabled = processing || !cropper;
 
     clearButton.disabled = processing;
-
-    dropzone.classList.toggle("busy", processing);
 
     extractButton.textContent = processing
         ? "Extracting…"
@@ -98,36 +98,26 @@ function setProcessingState(processing) {
         : "▣  Extract selected area";
 }
 
+
 // STOP SPEECH
 function stopSpeech() {
-
     speechSession++;
 
     if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
     }
 
-    currentUtterance = null;
-
     updateSpeechButtons();
 }
 
+
 // IMAGE UPLOAD
 function setImage(file) {
-
-    if (isProcessing || !file) {
-        return;
-    }
+    if (!file || isProcessing) return;
 
     if (!["image/png", "image/jpeg"].includes(file.type)) {
-
-        setStatus(
-            "Please upload a JPG or PNG image.",
-            "error"
-        );
-
+        setStatus("Please upload a JPG or PNG image.", "error");
         imageInput.value = "";
-
         return;
     }
 
@@ -148,42 +138,31 @@ function setImage(file) {
     previewURL = URL.createObjectURL(file);
 
     imagePreview.onload = function () {
-
         imagePreview.onload = null;
 
         try {
-
             if (typeof Cropper === "undefined") {
                 throw new Error("Cropper.js is unavailable.");
             }
 
             cropper = new Cropper(imagePreview, {
-
                 viewMode: 1,
-
                 dragMode: "crop",
-
                 autoCrop: true,
                 autoCropArea: 0.8,
-
                 responsive: true,
                 background: false,
-
                 movable: false,
                 zoomable: false,
                 scalable: false,
-
                 rotatable: true,
-
                 cropBoxMovable: true,
                 cropBoxResizable: true,
-
                 guides: true,
                 center: true,
                 highlight: true,
 
                 ready: function () {
-
                     setProcessingState(false);
 
                     setStatus(
@@ -194,27 +173,17 @@ function setImage(file) {
             });
 
         } catch (error) {
-
             console.error(error);
-
-            setStatus(
-                "Unable to initialize the image selection tool. Check your connection.",
-                "error"
-            );
+            setStatus("Unable to initialize image selection.", "error");
         }
     };
 
     imagePreview.onerror = function () {
-
-        setStatus(
-            "Unable to display this image.",
-            "error"
-        );
+        setStatus("Unable to display this image.", "error");
     };
 
     imagePreview.src = previewURL;
     imagePreview.hidden = false;
-
     emptyPreview.hidden = true;
 
     textOutput.value = "";
@@ -222,35 +191,27 @@ function setImage(file) {
 
     extractButton.disabled = true;
     extractSelectedButton.disabled = true;
-
     rotateLeftButton.disabled = true;
     rotateRightButton.disabled = true;
 
     setStatus("Loading image preview…", "busy");
 }
 
-// FILE INPUT
 imageInput.addEventListener("change", function () {
-
     setImage(imageInput.files[0]);
-
 });
 
-// IMAGE ROTATION
-function rotateImage(degrees) {
 
-    if (isProcessing || !cropper) {
-        return;
-    }
+// IMAGE ROTATION
+
+function rotateImage(degrees) {
+    if (!cropper || isProcessing) return;
 
     cropper.rotate(degrees);
-
     rotation = (rotation + degrees + 360) % 360;
 
     setStatus(
-        degrees < 0
-            ? "Image rotated left."
-            : "Image rotated right.",
+        degrees < 0 ? "Image rotated left." : "Image rotated right.",
         "success"
     );
 }
@@ -263,9 +224,9 @@ rotateRightButton.addEventListener("click", function () {
     rotateImage(90);
 });
 
-// DRAG AND DROP UPLOAD
-dropzone.addEventListener("dragover", function (event) {
 
+// DRAG AND DROP
+dropzone.addEventListener("dragover", function (event) {
     event.preventDefault();
 
     if (!isProcessing) {
@@ -274,91 +235,57 @@ dropzone.addEventListener("dragover", function (event) {
 });
 
 dropzone.addEventListener("dragleave", function () {
-
     dropzone.classList.remove("drag-over");
-
 });
 
 dropzone.addEventListener("drop", function (event) {
-
     event.preventDefault();
-
     dropzone.classList.remove("drag-over");
 
-    if (isProcessing) {
-        return;
-    }
+    if (isProcessing) return;
 
     const file = event.dataTransfer.files[0];
 
     if (file) {
-
         setImage(file);
 
         if (["image/png", "image/jpeg"].includes(file.type)) {
-
             try {
-
                 const transfer = new DataTransfer();
-
                 transfer.items.add(file);
-
                 imageInput.files = transfer.files;
-
             } catch (error) {
-
-                console.warn(
-                    "Unable to synchronize file input.",
-                    error
-                );
+                console.warn("Unable to synchronize file input.", error);
             }
         }
     }
 });
 
-// IMAGE PREPROCESSING FOR FULL-PAGE OCR
+
+// PREPARE ORIGINAL IMAGE FOR FULL-PAGE OCR
+
 function preprocessImage(file) {
-
     return new Promise((resolve, reject) => {
-
         const image = new Image();
-
         const url = URL.createObjectURL(file);
 
         image.onload = function () {
-
             const canvas = document.createElement("canvas");
-
             const context = canvas.getContext("2d");
 
             if (!context) {
-
                 URL.revokeObjectURL(url);
-
                 reject(new Error("Canvas is not supported."));
-
                 return;
             }
 
-            const sideways =
-                rotation === 90 || rotation === 270;
+            const sideways = rotation === 90 || rotation === 270;
 
-            canvas.width = sideways
-                ? image.height
-                : image.width;
+            canvas.width = sideways ? image.height : image.width;
+            canvas.height = sideways ? image.width : image.height;
 
-            canvas.height = sideways
-                ? image.width
-                : image.height;
-
-            context.translate(
-                canvas.width / 2,
-                canvas.height / 2
-            );
-
-            context.rotate(
-                (rotation * Math.PI) / 180
-            );
+            context.translate(canvas.width / 2, canvas.height / 2);
+            context.rotate((rotation * Math.PI) / 180);
 
             context.drawImage(
                 image,
@@ -367,14 +294,11 @@ function preprocessImage(file) {
             );
 
             URL.revokeObjectURL(url);
-
             resolve(canvas);
         };
 
         image.onerror = function () {
-
             URL.revokeObjectURL(url);
-
             reject(new Error("Unable to load image."));
         };
 
@@ -382,49 +306,39 @@ function preprocessImage(file) {
     });
 }
 
+
 // REUSABLE OCR FUNCTION
 async function performOCR(imageSource) {
-
     let worker = null;
 
-    setProcessingState(true);
+    const selectedLanguage = ocrLanguage.value;
 
-    setStatus("Preparing image for OCR…", "busy");
+    setProcessingState(true);
+    setStatus("Preparing OCR language data…", "busy");
 
     try {
-
         if (
             typeof Tesseract === "undefined" ||
             typeof Tesseract.createWorker !== "function"
         ) {
-
             throw new Error("Tesseract.js is unavailable.");
         }
 
         worker = await Tesseract.createWorker(
-            "eng",
+            selectedLanguage,
             1,
             {
                 logger: function (info) {
-
-                    if (info.status === "loading language traineddata") {
-
-                        const progress =
-                            Math.round(info.progress * 100);
-
-                        setStatus(
-                            `Loading OCR language data: ${progress}%`,
-                            "busy"
-                        );
-                    }
-
-                    if (info.status === "recognizing text") {
-
-                        const progress =
-                            Math.round(info.progress * 100);
+                    if (
+                        info.status === "loading language traineddata" ||
+                        info.status === "recognizing text"
+                    ) {
+                        const progress = Math.round(info.progress * 100);
 
                         setStatus(
-                            `Recognizing text: ${progress}%`,
+                            `${info.status === "recognizing text"
+                                ? "Recognizing text"
+                                : "Loading language data"}: ${progress}%`,
                             "busy"
                         );
                     }
@@ -433,60 +347,44 @@ async function performOCR(imageSource) {
         );
 
         await worker.setParameters({
-
             tessedit_pageseg_mode: Number(layoutMode.value),
-
             preserve_interword_spaces: "1"
-
         });
 
         const result = await worker.recognize(imageSource);
-
-        const extractedText =
-            (result.data.text || "").trim();
+        const extractedText = (result.data.text || "").trim();
 
         textOutput.value = extractedText;
-
         updateCount();
 
         stopSpeech();
 
         if (extractedText) {
-
             setStatus(
-                "Text extraction completed. Review the result for possible OCR errors.",
+                "Extraction completed. Review the text for possible OCR errors.",
                 "success"
             );
-
         } else {
-
             setStatus(
-                "No text detected. Try a clearer image or another selection.",
+                "No text detected. Try a clearer image or another language.",
                 "error"
             );
         }
 
     } catch (error) {
-
         console.error("OCR Error:", error);
 
         setStatus(
-            "Text extraction failed. Check your internet connection and try again.",
+            "Extraction failed. Check your connection and selected language.",
             "error"
         );
 
     } finally {
-
         if (worker) {
-
             try {
                 await worker.terminate();
             } catch (error) {
-
-                console.warn(
-                    "Unable to terminate OCR worker.",
-                    error
-                );
+                console.warn("Unable to terminate OCR worker.", error);
             }
         }
 
@@ -494,50 +392,34 @@ async function performOCR(imageSource) {
     }
 }
 
-// FULL-PAGE OCR
-extractButton.addEventListener("click", async function () {
 
-    if (!selectedImage || isProcessing) {
-        return;
-    }
+// FULL-PAGE OCR
+
+extractButton.addEventListener("click", async function () {
+    if (!selectedImage || isProcessing) return;
 
     try {
-
-        const processedImage =
-            await preprocessImage(selectedImage);
-
+        const processedImage = await preprocessImage(selectedImage);
         await performOCR(processedImage);
 
     } catch (error) {
-
-        console.error("Image preparation error:", error);
-
-        setStatus(
-            "Unable to prepare the image for OCR.",
-            "error"
-        );
-
+        console.error(error);
+        setStatus("Unable to prepare the image for OCR.", "error");
         setProcessingState(false);
     }
 });
 
+
 // SELECTED-AREA OCR
 extractSelectedButton.addEventListener("click", async function () {
-
-    if (!cropper || isProcessing) {
-        return;
-    }
+    if (!cropper || isProcessing) return;
 
     try {
-
         const selectedCanvas = cropper.getCroppedCanvas({
-
             maxWidth: 3000,
             maxHeight: 3000,
-
             imageSmoothingEnabled: true,
             imageSmoothingQuality: "high"
-
         });
 
         if (
@@ -545,40 +427,27 @@ extractSelectedButton.addEventListener("click", async function () {
             selectedCanvas.width < 2 ||
             selectedCanvas.height < 2
         ) {
-
-            setStatus(
-                "Please select a valid area of the image.",
-                "error"
-            );
-
+            setStatus("Please select a valid image area.", "error");
             return;
         }
 
         await performOCR(selectedCanvas);
 
     } catch (error) {
-
-        console.error("Selected OCR error:", error);
-
-        setStatus(
-            "Unable to extract the selected area.",
-            "error"
-        );
-
+        console.error(error);
+        setStatus("Unable to extract the selected area.", "error");
         setProcessingState(false);
     }
 });
 
-// TEXT TO SPEECH
+
+// TEXT-TO-SPEECH BUTTONS
 function updateSpeechButtons() {
-
     if (!("speechSynthesis" in window)) {
-
         speakButton.disabled = true;
         pauseButton.disabled = true;
         resumeButton.disabled = true;
         stopButton.disabled = true;
-
         return;
     }
 
@@ -593,27 +462,17 @@ function updateSpeechButtons() {
 
 
 // READ ALOUD
-speakButton.addEventListener("click", function () {
 
+speakButton.addEventListener("click", function () {
     const text = textOutput.value.trim();
 
     if (!text) {
-
-        setStatus(
-            "There is no text to read aloud.",
-            "error"
-        );
-
+        setStatus("There is no text to read aloud.", "error");
         return;
     }
 
     if (!("speechSynthesis" in window)) {
-
-        setStatus(
-            "Text-to-Speech is not supported by this browser.",
-            "error"
-        );
-
+        setStatus("Text-to-Speech is not supported by this browser.", "error");
         return;
     }
 
@@ -621,66 +480,44 @@ speakButton.addEventListener("click", function () {
 
     const session = speechSession;
 
-    currentUtterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(text);
 
-    currentUtterance.lang = "en-US";
-    currentUtterance.rate = Number(speechRate.value);
-    currentUtterance.pitch = 1;
+    utterance.lang = speechLanguages[ocrLanguage.value] || "en-US";
+    utterance.rate = Number(speechRate.value);
+    utterance.pitch = 1;
 
-    currentUtterance.onstart = function () {
-
+    utterance.onstart = function () {
         if (session !== speechSession) return;
 
         setStatus("Reading text aloud…", "success");
-
         updateSpeechButtons();
     };
 
-    currentUtterance.onend = function () {
-
+    utterance.onend = function () {
         if (session !== speechSession) return;
 
-        currentUtterance = null;
-
-        setStatus(
-            "Finished reading the text.",
-            "success"
-        );
-
+        setStatus("Finished reading the text.", "success");
         updateSpeechButtons();
     };
 
-    currentUtterance.onerror = function (event) {
-
+    utterance.onerror = function (event) {
         if (session !== speechSession) return;
 
         console.error("Speech error:", event);
-
-        currentUtterance = null;
-
-        setStatus(
-            "Unable to read the text aloud.",
-            "error"
-        );
-
+        setStatus("Unable to read the text aloud.", "error");
         updateSpeechButtons();
     };
 
-    speechSynthesis.speak(currentUtterance);
-
+    speechSynthesis.speak(utterance);
     updateSpeechButtons();
 });
 
 
 // PAUSE
 pauseButton.addEventListener("click", function () {
-
     if (speechSynthesis.speaking && !speechSynthesis.paused) {
-
         speechSynthesis.pause();
-
         setStatus("Speech paused.");
-
         updateSpeechButtons();
     }
 });
@@ -688,134 +525,94 @@ pauseButton.addEventListener("click", function () {
 
 // RESUME
 resumeButton.addEventListener("click", function () {
-
     if (speechSynthesis.paused) {
-
         speechSynthesis.resume();
-
-        setStatus(
-            "Speech resumed.",
-            "success"
-        );
-
+        setStatus("Speech resumed.", "success");
         updateSpeechButtons();
     }
 });
 
 
 // STOP
+
 stopButton.addEventListener("click", function () {
-
     stopSpeech();
-
     setStatus("Speech stopped.");
-
 });
 
 
-// STOP PLAYBACK WHEN TEXT CHANGES
-
+// STOP SPEECH WHEN TEXT CHANGES
 textOutput.addEventListener("input", function () {
-
     if (
         speechSynthesis.speaking ||
         speechSynthesis.paused
     ) {
-
         stopSpeech();
     }
 });
 
+
 // COPY TEXT
 copyButton.addEventListener("click", async function () {
-
     const text = textOutput.value;
 
     if (!text.trim()) {
-
-        setStatus(
-            "There is no text to copy.",
-            "error"
-        );
-
+        setStatus("There is no text to copy.", "error");
         return;
     }
 
     try {
-
-        if (!navigator.clipboard) {
-            throw new Error("Clipboard API unavailable.");
-        }
-
         await navigator.clipboard.writeText(text);
-
-        setStatus(
-            "Text copied to clipboard.",
-            "success"
-        );
+        setStatus("Text copied to clipboard.", "success");
 
     } catch (error) {
-
         textOutput.focus();
         textOutput.select();
 
         const copied = document.execCommand("copy");
 
         setStatus(
-            copied
-                ? "Text copied to clipboard."
-                : "Unable to copy text.",
+            copied ? "Text copied to clipboard." : "Unable to copy text.",
             copied ? "success" : "error"
         );
     }
 });
 
-// GET TEXT FOR DOWNLOAD
-function getText() {
 
+// GET TEXT
+function getText() {
     const text = textOutput.value.trim();
 
     if (!text) {
-
-        setStatus(
-            "There is no text to download.",
-            "error"
-        );
-
+        setStatus("There is no text to download.", "error");
         return null;
     }
 
     return text;
 }
 
+
 // DOWNLOAD HELPER
 function downloadBlob(blob, filename) {
-
     const url = URL.createObjectURL(blob);
-
     const link = document.createElement("a");
 
     link.href = url;
     link.download = filename;
 
     document.body.appendChild(link);
-
     link.click();
-
     link.remove();
 
     setTimeout(function () {
-
         URL.revokeObjectURL(url);
-
     }, 1000);
 }
 
-// DOWNLOAD TXT
+
+// TXT EXPORT
 downloadButton.addEventListener("click", function () {
-
     const text = getText();
-
     if (text === null) return;
 
     const blob = new Blob(
@@ -823,28 +620,18 @@ downloadButton.addEventListener("click", function () {
         { type: "text/plain;charset=utf-8" }
     );
 
-    downloadBlob(
-        blob,
-        "extracted-text.txt"
-    );
-
-    setStatus(
-        "TXT file downloaded.",
-        "success"
-    );
+    downloadBlob(blob, "extracted-text.txt");
+    setStatus("TXT file downloaded.", "success");
 });
 
-// DOWNLOAD WORD
+
+// WORD EXPORT
 downloadWordButton.addEventListener("click", async function () {
-
     const text = getText();
-
     if (text === null) return;
 
     try {
-
         if (!window.docx) {
-
             throw new Error("Word library unavailable.");
         }
 
@@ -856,175 +643,121 @@ downloadWordButton.addEventListener("click", async function () {
         } = window.docx;
 
         const paragraphs = text.split(/\r?\n/).map(function (line) {
-
             return new Paragraph({
-
-                children: [
-                    new TextRun(line)
-                ]
-
+                children: [new TextRun(line)]
             });
         });
 
         const documentFile = new Document({
-
-            sections: [
-                {
-                    properties: {},
-                    children: paragraphs
-                }
-            ]
-
+            sections: [{
+                properties: {},
+                children: paragraphs
+            }]
         });
 
         const blob = await Packer.toBlob(documentFile);
 
-        downloadBlob(
-            blob,
-            "extracted-text.docx"
-        );
-
-        setStatus(
-            "Word document downloaded.",
-            "success"
-        );
+        downloadBlob(blob, "extracted-text.docx");
+        setStatus("Word document downloaded.", "success");
 
     } catch (error) {
-
-        console.error("Word Export Error:", error);
-
-        setStatus(
-            "Unable to create the Word document. Check your connection.",
-            "error"
-        );
+        console.error(error);
+        setStatus("Unable to create the Word document.", "error");
     }
 });
 
-// DOWNLOAD PDF
+
+// PDF EXPORT
 downloadPdfButton.addEventListener("click", function () {
-
     const text = getText();
-
     if (text === null) return;
 
     try {
-
         if (!window.jspdf || !window.jspdf.jsPDF) {
-
             throw new Error("PDF library unavailable.");
         }
 
         const { jsPDF } = window.jspdf;
-
         const pdf = new jsPDF();
 
-        const pageWidth =
-            pdf.internal.pageSize.getWidth();
-
-        const pageHeight =
-            pdf.internal.pageSize.getHeight();
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
 
         const margin = 15;
         const lineHeight = 7;
 
-        const maxWidth =
-            pageWidth - margin * 2;
-
-        const lines =
-            pdf.splitTextToSize(text, maxWidth);
+        const lines = pdf.splitTextToSize(
+            text,
+            pageWidth - margin * 2
+        );
 
         let y = margin;
 
         lines.forEach(function (line) {
-
             if (y + lineHeight > pageHeight - margin) {
-
                 pdf.addPage();
-
                 y = margin;
             }
 
             pdf.text(line, margin, y);
-
             y += lineHeight;
         });
 
         pdf.save("extracted-text.pdf");
 
-        setStatus(
-            "PDF document downloaded.",
-            "success"
-        );
+        setStatus("PDF document downloaded.", "success");
 
     } catch (error) {
-
-        console.error("PDF Export Error:", error);
-
-        setStatus(
-            "Unable to create the PDF document. Check your connection.",
-            "error"
-        );
+        console.error(error);
+        setStatus("Unable to create the PDF document.", "error");
     }
 });
 
+
 // CLEAR EVERYTHING
 clearButton.addEventListener("click", function () {
-
-    if (isProcessing) {
-        return;
-    }
+    if (isProcessing) return;
 
     stopSpeech();
 
     imageInput.value = "";
 
     if (cropper) {
-
         cropper.destroy();
-
         cropper = null;
     }
 
     imagePreview.onload = null;
     imagePreview.onerror = null;
-
     imagePreview.removeAttribute("src");
-
     imagePreview.hidden = true;
 
     emptyPreview.hidden = false;
 
     textOutput.value = "";
-
     updateCount();
 
     selectedImage = null;
-
     rotation = 0;
 
     if (previewURL) {
-
         URL.revokeObjectURL(previewURL);
-
         previewURL = null;
     }
 
     extractButton.disabled = true;
     extractSelectedButton.disabled = true;
-
     rotateLeftButton.disabled = true;
     rotateRightButton.disabled = true;
 
-    setStatus(
-        "Cleared. Upload another image to begin."
-    );
+    setStatus("Cleared. Upload another image to begin.");
 
     updateSpeechButtons();
 });
 
-// INITIALIZE APPLICATION
-updateCount();
 
+// INITIALIZE
+updateCount();
 updateSpeechButtons();
 
 setStatus("Upload an image to get started.");
