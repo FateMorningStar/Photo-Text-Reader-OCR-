@@ -1,4 +1,4 @@
-// Photo Text Reader - redesigned interface logic
+// Photo Text Reader
 
 const imageInput = document.getElementById("imageInput");
 const imagePreview = document.getElementById("imagePreview");
