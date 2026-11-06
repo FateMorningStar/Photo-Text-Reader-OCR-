@@ -104,7 +104,6 @@ imageInput.addEventListener("change", function () {
 // IMAGE ROTATION
 
 function rotateImage(degrees) {
-
     if (!selectedImage) {
         setStatus("Please upload an image first.", "error");
         return;
@@ -112,8 +111,10 @@ function rotateImage(degrees) {
 
     rotation = (rotation + degrees + 360) % 360;
 
-    imagePreview.style.transform =
-        `rotate(${rotation}deg)`;
+    imagePreview.style.transform = `rotate(${rotation}deg)`;
+    imagePreview.style.transformOrigin = "center center";
+
+    setStatus(`Image rotated ${rotation}° clockwise.`, "success");
 }
 
 rotateLeftButton.addEventListener("click", function () {
