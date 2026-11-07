@@ -695,11 +695,15 @@ function pauseMobileSpeech() {
 
 function resumeMobileSpeech() {
     const session = speechSession;
+    const synth = window.speechSynthesis;
 
     setStatus("Preparing to resume speech…", "busy");
     updateSpeechButtons();
 
-    // Give the mobile speech engine time to reset.
+    // Reset the speech engine.
+    synth.cancel();
+    synth.resume();
+
     setTimeout(function () {
         if (
             session !== speechSession ||
@@ -708,9 +712,10 @@ function resumeMobileSpeech() {
             return;
         }
 
+        synth.resume();
         speakNextChunk(session);
 
-    }, 500);
+    }, 300);
 }
 
 
