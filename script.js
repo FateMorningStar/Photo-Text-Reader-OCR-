@@ -595,9 +595,13 @@ pauseButton.addEventListener("click", function () {
 
     speechIsPaused = true;
 
-    if (speechSynthesis.speaking) {
-        speechSynthesis.pause();
-    }
+    // Invalidate callbacks from the current utterance.
+    speechSession++;
+
+    // Stop current playback but preserve the queue and index.
+    speechSynthesis.cancel();
+
+    currentUtterance = null;
 
     setStatus("Speech paused.");
     updateSpeechButtons();
@@ -610,23 +614,19 @@ resumeButton.addEventListener("click", function () {
 
     speechIsPaused = false;
 
-    if (speechSynthesis.paused) {
-        speechSynthesis.resume();
+    // Use a new session for the resumed playback.
+    const session = speechSession;
 
-        setStatus("Speech resumed.", "success");
-
-    } else if (!speechSynthesis.speaking) {
-        // Browser fallback:
-        // Continue with the current sentence if the paused
-        // utterance is no longer active.
-        setStatus("Continuing speech…", "success");
-        speakNextChunk(speechSession);
-
-    } else {
-        setStatus("Speech resumed.", "success");
-    }
-
+    setStatus("Resuming speech…", "success");
     updateSpeechButtons();
+
+    // Allow the browser speech engine to finish cancellation
+    // before starting the next utterance.
+    setTimeout(function () {
+        if (session !== speechSession || speechIsPaused) return;
+
+        speakNextChunk(session);
+    }, 200);
 });
 
 
@@ -644,11 +644,7 @@ textOutput.addEventListener("input", function () {
     }
 });
 
-
-// ========================================
 // COPY AND EXPORT
-// ========================================
-
 
 // COPY TEXT
 copyButton.addEventListener("click", async function () {
