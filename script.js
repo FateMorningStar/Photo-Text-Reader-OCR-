@@ -695,14 +695,9 @@ function pauseMobileSpeech() {
 
 function resumeMobileSpeech() {
     const session = speechSession;
-    const synth = window.speechSynthesis;
 
     setStatus("Preparing to resume speech…", "busy");
     updateSpeechButtons();
-
-    // Reset the speech engine.
-    synth.cancel();
-    synth.resume();
 
     setTimeout(function () {
         if (
@@ -712,10 +707,9 @@ function resumeMobileSpeech() {
             return;
         }
 
-        synth.resume();
         speakNextChunk(session);
 
-    }, 300);
+    }, 500);
 }
 
 
@@ -769,6 +763,48 @@ textOutput.addEventListener("input", function () {
     if (speechQueue.length > 0) {
         stopSpeech();
     }
+});
+
+// CLEAR ALL
+clearButton.addEventListener("click", function () {
+    if (isProcessing) return;
+
+    // Stop speech playback
+    stopSpeech();
+
+    // Destroy image selection
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+
+    // Remove uploaded image
+    selectedImage = null;
+    rotation = 0;
+
+    if (previewURL) {
+        URL.revokeObjectURL(previewURL);
+        previewURL = null;
+    }
+
+    imageInput.value = "";
+    imagePreview.removeAttribute("src");
+    imagePreview.hidden = true;
+    emptyPreview.hidden = false;
+
+    // Clear extracted text
+    textOutput.value = "";
+    updateCount();
+
+    // Reset controls
+    setProcessingState(false);
+
+    extractButton.disabled = true;
+    extractSelectedButton.disabled = true;
+    rotateLeftButton.disabled = true;
+    rotateRightButton.disabled = true;
+
+    setStatus("All content cleared.", "success");
 });
 
 
