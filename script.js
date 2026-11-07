@@ -38,7 +38,13 @@ let previewURL = null;
 let rotation = 0;
 let isProcessing = false;
 let cropper = null;
+
+// Speech state
 let speechSession = 0;
+let speechQueue = [];
+let currentSpeechIndex = 0;
+let currentUtterance = null;
+let speechIsPaused = false;
 
 
 // SPEECH LANGUAGE MAPPING
@@ -102,6 +108,11 @@ function setProcessingState(processing) {
 // STOP SPEECH
 function stopSpeech() {
     speechSession++;
+
+    speechQueue = [];
+    currentSpeechIndex = 0;
+    currentUtterance = null;
+    speechIsPaused = false;
 
     if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
@@ -445,7 +456,12 @@ extractSelectedButton.addEventListener("click", async function () {
 });
 
 
-// TEXT-TO-SPEECH BUTTONS
+// ========================================
+// TEXT-TO-SPEECH SYSTEM
+// ========================================
+
+
+// UPDATE SPEECH BUTTONS
 function updateSpeechButtons() {
     if (!("speechSynthesis" in window)) {
         speakButton.disabled = true;
@@ -455,36 +471,53 @@ function updateSpeechButtons() {
         return;
     }
 
-    const speaking = speechSynthesis.speaking;
-    const paused = speechSynthesis.paused;
+    const active = speechQueue.length > 0;
 
-    speakButton.disabled = speaking || paused;
-    pauseButton.disabled = !speaking || paused;
-    resumeButton.disabled = !paused;
-    stopButton.disabled = !speaking && !paused;
+    speakButton.disabled = active;
+    pauseButton.disabled = !active || speechIsPaused;
+    resumeButton.disabled = !active || !speechIsPaused;
+    stopButton.disabled = !active;
 }
 
 
-// READ ALOUD
-speakButton.addEventListener("click", function () {
-    const text = textOutput.value.trim();
+// SPLIT TEXT INTO READABLE CHUNKS
+function splitSpeechText(text) {
+    const chunks = text.match(/[^.!?。！？\n]+[.!?。！？]?/g);
 
-    if (!text) {
-        setStatus("There is no text to read aloud.", "error");
+    return chunks
+        ? chunks.map(part => part.trim()).filter(Boolean)
+        : [text];
+}
+
+
+// READ NEXT CHUNK
+function speakNextChunk(session) {
+    if (
+        session !== speechSession ||
+        speechIsPaused
+    ) {
         return;
     }
 
-    if (!("speechSynthesis" in window)) {
-        setStatus("Text-to-Speech is not supported by this browser.", "error");
+    if (currentSpeechIndex >= speechQueue.length) {
+        speechQueue = [];
+        currentUtterance = null;
+        speechIsPaused = false;
+
+        setStatus("Finished reading the text.", "success");
+        updateSpeechButtons();
         return;
     }
 
-    stopSpeech();
+    const chunk = speechQueue[currentSpeechIndex];
 
-    const session = speechSession;
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(chunk);
 
-    utterance.lang = speechLanguages[ocrLanguage.value] || "en-US";
+    currentUtterance = utterance;
+
+    utterance.lang =
+        speechLanguages[ocrLanguage.value] || "en-US";
+
     utterance.rate = Number(speechRate.value);
     utterance.pitch = 1;
 
@@ -498,40 +531,102 @@ speakButton.addEventListener("click", function () {
     utterance.onend = function () {
         if (session !== speechSession) return;
 
-        setStatus("Finished reading the text.", "success");
-        updateSpeechButtons();
+        currentSpeechIndex++;
+        currentUtterance = null;
+
+        if (!speechIsPaused) {
+            speakNextChunk(session);
+        }
     };
 
     utterance.onerror = function (event) {
         if (session !== speechSession) return;
 
+        if (
+            event.error === "canceled" ||
+            event.error === "interrupted"
+        ) {
+            return;
+        }
+
         console.error("Speech error:", event);
+
         setStatus("Unable to read the text aloud.", "error");
-        updateSpeechButtons();
+        stopSpeech();
     };
 
     speechSynthesis.speak(utterance);
+}
+
+
+// READ ALOUD
+speakButton.addEventListener("click", function () {
+    const text = textOutput.value.trim();
+
+    if (!text) {
+        setStatus("There is no text to read aloud.", "error");
+        return;
+    }
+
+    if (!("speechSynthesis" in window)) {
+        setStatus(
+            "Text-to-Speech is not supported by this browser.",
+            "error"
+        );
+        return;
+    }
+
+    stopSpeech();
+
+    speechQueue = splitSpeechText(text);
+    currentSpeechIndex = 0;
+    speechIsPaused = false;
+
+    const session = speechSession;
+
     updateSpeechButtons();
+    speakNextChunk(session);
 });
 
 
 // PAUSE
 pauseButton.addEventListener("click", function () {
-    if (speechSynthesis.speaking && !speechSynthesis.paused) {
+    if (!speechQueue.length || speechIsPaused) return;
+
+    speechIsPaused = true;
+
+    if (speechSynthesis.speaking) {
         speechSynthesis.pause();
-        setStatus("Speech paused.");
-        updateSpeechButtons();
     }
+
+    setStatus("Speech paused.");
+    updateSpeechButtons();
 });
 
 
 // RESUME
 resumeButton.addEventListener("click", function () {
+    if (!speechQueue.length || !speechIsPaused) return;
+
+    speechIsPaused = false;
+
     if (speechSynthesis.paused) {
         speechSynthesis.resume();
+
         setStatus("Speech resumed.", "success");
-        updateSpeechButtons();
+
+    } else if (!speechSynthesis.speaking) {
+        // Browser fallback:
+        // Continue with the current sentence if the paused
+        // utterance is no longer active.
+        setStatus("Continuing speech…", "success");
+        speakNextChunk(speechSession);
+
+    } else {
+        setStatus("Speech resumed.", "success");
     }
+
+    updateSpeechButtons();
 });
 
 
@@ -544,13 +639,15 @@ stopButton.addEventListener("click", function () {
 
 // STOP SPEECH WHEN TEXT CHANGES
 textOutput.addEventListener("input", function () {
-    if (
-        speechSynthesis.speaking ||
-        speechSynthesis.paused
-    ) {
+    if (speechQueue.length > 0) {
         stopSpeech();
     }
 });
+
+
+// ========================================
+// COPY AND EXPORT
+// ========================================
 
 
 // COPY TEXT
