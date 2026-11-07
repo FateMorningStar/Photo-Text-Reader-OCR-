@@ -39,7 +39,8 @@ let rotation = 0;
 let isProcessing = false;
 let cropper = null;
 
-// Speech state
+
+// SPEECH STATE
 let speechSession = 0;
 let speechQueue = [];
 let currentSpeechIndex = 0;
@@ -49,6 +50,24 @@ let speechIsPaused = false;
 let currentChunkOffset = 0;
 let utteranceStartOffset = 0;
 let hasBoundaryPosition = false;
+
+
+// DEVICE DETECTION
+function isMobileBrowser() {
+    return /Android|iPhone|iPad|iPod|Mobile/i.test(
+        navigator.userAgent
+    ) || (
+        navigator.maxTouchPoints > 1 &&
+        /Macintosh/i.test(navigator.userAgent)
+    );
+}
+
+const isMobile = isMobileBrowser();
+
+console.log(
+    "Text-to-Speech mode:",
+    isMobile ? "Mobile" : "Desktop"
+);
 
 
 // SPEECH LANGUAGE MAPPING
@@ -520,7 +539,6 @@ function speakNextChunk(session) {
 
     const chunk = speechQueue[currentSpeechIndex];
 
-    // Remember where this utterance starts in the sentence.
     utteranceStartOffset = currentChunkOffset;
 
     const remainingText = chunk.slice(utteranceStartOffset);
@@ -632,19 +650,36 @@ speakButton.addEventListener("click", function () {
 });
 
 
-// PAUSE
-pauseButton.addEventListener("click", function () {
-    if (!speechQueue.length || speechIsPaused) {
-        return;
-    }
+// ========================================
+// DESKTOP / PC SPEECH CONTROLS
+// ========================================
 
-    speechIsPaused = true;
+function pauseDesktopSpeech() {
+    window.speechSynthesis.pause();
 
+    setStatus("Speech paused.", "success");
+    updateSpeechButtons();
+}
+
+function resumeDesktopSpeech() {
+    window.speechSynthesis.resume();
+
+    setStatus("Resuming speech…", "success");
+    updateSpeechButtons();
+}
+
+
+// ========================================
+// MOBILE BROWSER SPEECH CONTROLS
+// ========================================
+
+function pauseMobileSpeech() {
     // Invalidate callbacks from the current utterance.
     speechSession++;
 
-    // Cancel playback but retain the saved position.
+    // Cancel playback but retain the approximate position.
     window.speechSynthesis.cancel();
+
     currentUtterance = null;
 
     if (hasBoundaryPosition) {
@@ -656,10 +691,52 @@ pauseButton.addEventListener("click", function () {
     }
 
     updateSpeechButtons();
+}
+
+function resumeMobileSpeech() {
+    const session = speechSession;
+
+    setStatus("Preparing to resume speech…", "busy");
+    updateSpeechButtons();
+
+    // Give the mobile speech engine time to reset.
+    setTimeout(function () {
+        if (
+            session !== speechSession ||
+            speechIsPaused
+        ) {
+            return;
+        }
+
+        speakNextChunk(session);
+
+    }, 500);
+}
+
+
+// ========================================
+// PAUSE — AUTOMATIC DEVICE SELECTION
+// ========================================
+
+pauseButton.addEventListener("click", function () {
+    if (!speechQueue.length || speechIsPaused) {
+        return;
+    }
+
+    speechIsPaused = true;
+
+    if (isMobile) {
+        pauseMobileSpeech();
+    } else {
+        pauseDesktopSpeech();
+    }
 });
 
 
-// RESUME
+// ========================================
+// RESUME — AUTOMATIC DEVICE SELECTION
+// ========================================
+
 resumeButton.addEventListener("click", function () {
     if (!speechQueue.length || !speechIsPaused) {
         return;
@@ -667,12 +744,11 @@ resumeButton.addEventListener("click", function () {
 
     speechIsPaused = false;
 
-    const session = speechSession;
-
-    updateSpeechButtons();
-    speakNextChunk(session);
-
-    setStatus("Resuming speech…", "success");
+    if (isMobile) {
+        resumeMobileSpeech();
+    } else {
+        resumeDesktopSpeech();
+    }
 });
 
 
@@ -689,6 +765,7 @@ textOutput.addEventListener("input", function () {
         stopSpeech();
     }
 });
+
 
 // COPY AND EXPORT
 
@@ -852,6 +929,7 @@ downloadPdfButton.addEventListener("click", function () {
         setStatus("Unable to create the PDF document.", "error");
     }
 });
+
 
 // INITIALIZATION
 updateCount();
