@@ -1,4 +1,3 @@
-
 // PHOTO TEXT READER
 // ELEMENT REFERENCES
 const imageInput = document.getElementById("imageInput");
