@@ -61,9 +61,9 @@ function isMobileBrowser() {
 
 const isMobile = isMobileBrowser();
 
-console.log(
-    "Text-to-Speech mode:",
-    isMobile ? "Mobile" : "Desktop"
+setStatus(
+    "Speech mode detected: " + (isMobile ? "Mobile" : "Desktop"),
+    "success"
 );
 
 
