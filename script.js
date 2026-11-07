@@ -1,4 +1,4 @@
-// PHOTO TEXT READER
+ // PHOTO TEXT READER
 // ELEMENT REFERENCES
 const imageInput = document.getElementById("imageInput");
 const imagePreview = document.getElementById("imagePreview");
@@ -150,14 +150,19 @@ function setImage(file) {
                 dragMode: "crop",
                 autoCrop: true,
                 autoCropArea: 0.8,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+
                 responsive: true,
+                restore: false,
+                checkOrientation: true,
+
                 background: false,
                 movable: false,
                 zoomable: false,
                 scalable: false,
                 rotatable: true,
-                cropBoxMovable: true,
-                cropBoxResizable: true,
+
                 guides: true,
                 center: true,
                 highlight: true,
@@ -175,11 +180,13 @@ function setImage(file) {
         } catch (error) {
             console.error(error);
             setStatus("Unable to initialize image selection.", "error");
+            setProcessingState(false);
         }
     };
 
     imagePreview.onerror = function () {
         setStatus("Unable to display this image.", "error");
+        setProcessingState(false);
     };
 
     imagePreview.src = previewURL;
@@ -203,7 +210,6 @@ imageInput.addEventListener("change", function () {
 
 
 // IMAGE ROTATION
-
 function rotateImage(degrees) {
     if (!cropper || isProcessing) return;
 
@@ -263,7 +269,6 @@ dropzone.addEventListener("drop", function (event) {
 
 
 // PREPARE ORIGINAL IMAGE FOR FULL-PAGE OCR
-
 function preprocessImage(file) {
     return new Promise((resolve, reject) => {
         const image = new Image();
@@ -394,7 +399,6 @@ async function performOCR(imageSource) {
 
 
 // FULL-PAGE OCR
-
 extractButton.addEventListener("click", async function () {
     if (!selectedImage || isProcessing) return;
 
@@ -462,7 +466,6 @@ function updateSpeechButtons() {
 
 
 // READ ALOUD
-
 speakButton.addEventListener("click", function () {
     const text = textOutput.value.trim();
 
@@ -479,7 +482,6 @@ speakButton.addEventListener("click", function () {
     stopSpeech();
 
     const session = speechSession;
-
     const utterance = new SpeechSynthesisUtterance(text);
 
     utterance.lang = speechLanguages[ocrLanguage.value] || "en-US";
@@ -534,7 +536,6 @@ resumeButton.addEventListener("click", function () {
 
 
 // STOP
-
 stopButton.addEventListener("click", function () {
     stopSpeech();
     setStatus("Speech stopped.");
