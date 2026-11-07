@@ -46,6 +46,10 @@ let currentSpeechIndex = 0;
 let currentUtterance = null;
 let speechIsPaused = false;
 
+let currentChunkOffset = 0;
+let utteranceStartOffset = 0;
+let hasBoundaryPosition = false;
+
 
 // SPEECH LANGUAGE MAPPING
 const speechLanguages = {
@@ -132,6 +136,10 @@ function stopSpeech() {
     currentSpeechIndex = 0;
     currentUtterance = null;
     speechIsPaused = false;
+
+    currentChunkOffset = 0;
+    utteranceStartOffset = 0;
+    hasBoundaryPosition = false;
 
     if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
@@ -475,10 +483,7 @@ extractSelectedButton.addEventListener("click", async function () {
 });
 
 
-// ========================================
 // TEXT-TO-SPEECH SYSTEM
-// ========================================
-
 
 // SPLIT TEXT INTO READABLE CHUNKS
 function splitSpeechText(text) {
@@ -504,13 +509,32 @@ function speakNextChunk(session) {
         currentUtterance = null;
         speechIsPaused = false;
 
+        currentChunkOffset = 0;
+        utteranceStartOffset = 0;
+        hasBoundaryPosition = false;
+
         setStatus("Finished reading the text.", "success");
         updateSpeechButtons();
         return;
     }
 
     const chunk = speechQueue[currentSpeechIndex];
-    const utterance = new SpeechSynthesisUtterance(chunk);
+
+    // Remember where this utterance starts in the sentence.
+    utteranceStartOffset = currentChunkOffset;
+
+    const remainingText = chunk.slice(utteranceStartOffset);
+
+    if (!remainingText.trim()) {
+        currentSpeechIndex++;
+        currentChunkOffset = 0;
+        hasBoundaryPosition = false;
+
+        speakNextChunk(session);
+        return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(remainingText);
 
     currentUtterance = utterance;
 
@@ -527,15 +551,32 @@ function speakNextChunk(session) {
         updateSpeechButtons();
     };
 
+    // TRACK WORD POSITION
+    utterance.onboundary = function (event) {
+        if (
+            session !== speechSession ||
+            event.name !== "word"
+        ) {
+            return;
+        }
+
+        currentChunkOffset =
+            utteranceStartOffset + event.charIndex;
+
+        hasBoundaryPosition = true;
+    };
+
     utterance.onend = function () {
         if (session !== speechSession) return;
 
-        currentSpeechIndex++;
         currentUtterance = null;
+        currentSpeechIndex++;
 
-        if (!speechIsPaused) {
-            speakNextChunk(session);
-        }
+        currentChunkOffset = 0;
+        utteranceStartOffset = 0;
+        hasBoundaryPosition = false;
+
+        speakNextChunk(session);
     };
 
     utterance.onerror = function (event) {
@@ -579,6 +620,9 @@ speakButton.addEventListener("click", function () {
 
     speechQueue = splitSpeechText(text);
     currentSpeechIndex = 0;
+    currentChunkOffset = 0;
+    utteranceStartOffset = 0;
+    hasBoundaryPosition = false;
     speechIsPaused = false;
 
     const session = speechSession;
@@ -590,39 +634,45 @@ speakButton.addEventListener("click", function () {
 
 // PAUSE
 pauseButton.addEventListener("click", function () {
-    if (
-        !speechQueue.length ||
-        speechIsPaused
-    ) {
+    if (!speechQueue.length || speechIsPaused) {
         return;
     }
 
     speechIsPaused = true;
 
-    // Pause the current utterance without cancelling it.
-    window.speechSynthesis.pause();
+    // Invalidate callbacks from the current utterance.
+    speechSession++;
 
-    setStatus("Speech paused.");
+    // Cancel playback but retain the saved position.
+    window.speechSynthesis.cancel();
+    currentUtterance = null;
+
+    if (hasBoundaryPosition) {
+        setStatus("Speech paused. Position saved.", "success");
+    } else {
+        setStatus(
+            "Speech paused. Resume may restart the current sentence."
+        );
+    }
+
     updateSpeechButtons();
 });
 
 
 // RESUME
 resumeButton.addEventListener("click", function () {
-    if (
-        !speechQueue.length ||
-        !speechIsPaused
-    ) {
+    if (!speechQueue.length || !speechIsPaused) {
         return;
     }
 
     speechIsPaused = false;
 
-    // Continue the existing utterance.
-    window.speechSynthesis.resume();
+    const session = speechSession;
+
+    updateSpeechButtons();
+    speakNextChunk(session);
 
     setStatus("Resuming speech…", "success");
-    updateSpeechButtons();
 });
 
 
