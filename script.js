@@ -1,3 +1,4 @@
+
 // PHOTO TEXT READER
 // ELEMENT REFERENCES
 const imageInput = document.getElementById("imageInput");
@@ -102,6 +103,25 @@ function setProcessingState(processing) {
     extractSelectedButton.textContent = processing
         ? "Extracting…"
         : "▣  Extract selected area";
+}
+
+
+// UPDATE SPEECH BUTTONS
+function updateSpeechButtons() {
+    if (!("speechSynthesis" in window)) {
+        speakButton.disabled = true;
+        pauseButton.disabled = true;
+        resumeButton.disabled = true;
+        stopButton.disabled = true;
+        return;
+    }
+
+    const active = speechQueue.length > 0;
+
+    speakButton.disabled = active;
+    pauseButton.disabled = !active || speechIsPaused;
+    resumeButton.disabled = !active || !speechIsPaused;
+    stopButton.disabled = !active;
 }
 
 
@@ -461,25 +481,6 @@ extractSelectedButton.addEventListener("click", async function () {
 // ========================================
 
 
-// UPDATE SPEECH BUTTONS
-function updateSpeechButtons() {
-    if (!("speechSynthesis" in window)) {
-        speakButton.disabled = true;
-        pauseButton.disabled = true;
-        resumeButton.disabled = true;
-        stopButton.disabled = true;
-        return;
-    }
-
-    const active = speechQueue.length > 0;
-
-    speakButton.disabled = active;
-    pauseButton.disabled = !active || speechIsPaused;
-    resumeButton.disabled = !active || !speechIsPaused;
-    stopButton.disabled = !active;
-}
-
-
 // SPLIT TEXT INTO READABLE CHUNKS
 function splitSpeechText(text) {
     const chunks = text.match(/[^.!?。！？\n]+[.!?。！？]?/g);
@@ -510,7 +511,6 @@ function speakNextChunk(session) {
     }
 
     const chunk = speechQueue[currentSpeechIndex];
-
     const utterance = new SpeechSynthesisUtterance(chunk);
 
     currentUtterance = utterance;
@@ -555,7 +555,7 @@ function speakNextChunk(session) {
         stopSpeech();
     };
 
-    speechSynthesis.speak(utterance);
+    window.speechSynthesis.speak(utterance);
 }
 
 
@@ -591,17 +591,17 @@ speakButton.addEventListener("click", function () {
 
 // PAUSE
 pauseButton.addEventListener("click", function () {
-    if (!speechQueue.length || speechIsPaused) return;
+    if (
+        !speechQueue.length ||
+        speechIsPaused
+    ) {
+        return;
+    }
 
     speechIsPaused = true;
 
-    // Invalidate callbacks from the current utterance.
-    speechSession++;
-
-    // Stop current playback but preserve the queue and index.
-    speechSynthesis.cancel();
-
-    currentUtterance = null;
+    // Pause the current utterance without cancelling it.
+    window.speechSynthesis.pause();
 
     setStatus("Speech paused.");
     updateSpeechButtons();
@@ -610,23 +610,20 @@ pauseButton.addEventListener("click", function () {
 
 // RESUME
 resumeButton.addEventListener("click", function () {
-    if (!speechQueue.length || !speechIsPaused) return;
+    if (
+        !speechQueue.length ||
+        !speechIsPaused
+    ) {
+        return;
+    }
 
     speechIsPaused = false;
 
-    // Use a new session for the resumed playback.
-    const session = speechSession;
+    // Continue the existing utterance.
+    window.speechSynthesis.resume();
 
     setStatus("Resuming speech…", "success");
     updateSpeechButtons();
-
-    // Allow the browser speech engine to finish cancellation
-    // before starting the next utterance.
-    setTimeout(function () {
-        if (session !== speechSession || speechIsPaused) return;
-
-        speakNextChunk(session);
-    }, 200);
 });
 
 
@@ -807,51 +804,6 @@ downloadPdfButton.addEventListener("click", function () {
     }
 });
 
-
-// CLEAR EVERYTHING
-clearButton.addEventListener("click", function () {
-    if (isProcessing) return;
-
-    stopSpeech();
-
-    imageInput.value = "";
-
-    if (cropper) {
-        cropper.destroy();
-        cropper = null;
-    }
-
-    imagePreview.onload = null;
-    imagePreview.onerror = null;
-    imagePreview.removeAttribute("src");
-    imagePreview.hidden = true;
-
-    emptyPreview.hidden = false;
-
-    textOutput.value = "";
-    updateCount();
-
-    selectedImage = null;
-    rotation = 0;
-
-    if (previewURL) {
-        URL.revokeObjectURL(previewURL);
-        previewURL = null;
-    }
-
-    extractButton.disabled = true;
-    extractSelectedButton.disabled = true;
-    rotateLeftButton.disabled = true;
-    rotateRightButton.disabled = true;
-
-    setStatus("Cleared. Upload another image to begin.");
-
-    updateSpeechButtons();
-});
-
-
-// INITIALIZE
+// INITIALIZATION
 updateCount();
 updateSpeechButtons();
-
-setStatus("Upload an image to get started.");
