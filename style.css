@@ -298,11 +298,6 @@ a:focus-visible {
     display: none !important;
 }
 
-/*
-   Cropper.js controls its own internal dimensions.
-   Do not force width, height, or max-width on its
-   container, canvas, crop box, or drag box.
-*/
 
 .cropper-view-box {
     outline: 2px solid var(--purple);
@@ -488,15 +483,6 @@ a:focus-visible {
 }
 
 /* TEXT TO SPEECH */
-
-.speech-section {
-    margin-top: 18px;
-    padding: 14px;
-    background: #f8f7ff;
-    border: 1px solid #ece8ff;
-    border-radius: 13px;
-}
-
 .speech-heading {
     margin-top: 22px;
 }
