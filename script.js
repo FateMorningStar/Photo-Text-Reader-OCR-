@@ -54,12 +54,9 @@ let hasBoundaryPosition = false;
 
 // DEVICE DETECTION
 function isMobileBrowser() {
-    return /Android|iPhone|iPad|iPod|Mobile/i.test(
+    return /Android|iPhone|iPad|iPod/i.test(
         navigator.userAgent
-    ) || (
-        navigator.maxTouchPoints > 1 &&
-        /Macintosh/i.test(navigator.userAgent)
-    );
+    ) || navigator.maxTouchPoints > 0;
 }
 
 const isMobile = isMobileBrowser();
