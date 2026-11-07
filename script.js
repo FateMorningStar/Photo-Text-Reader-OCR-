@@ -1,4 +1,3 @@
-console.log("PHOTO TEXT READER SCRIPT LOADED");
 // PHOTO TEXT READER
 // ELEMENT REFERENCES
 const imageInput = document.getElementById("imageInput");
