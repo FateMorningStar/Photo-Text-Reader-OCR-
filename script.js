@@ -322,38 +322,181 @@ dropzone.addEventListener("drop", function (event) {
 });
 
 
-// PREPARE ORIGINAL IMAGE FOR FULL-PAGE OCR
+// IMAGE ENHANCEMENT FOR OCR
+function enhanceCanvasForOCR(sourceCanvas) {
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d", {
+        willReadFrequently: true
+    });
+
+    if (!context) {
+        throw new Error("Canvas image processing is unavailable.");
+    }
+
+    canvas.width = sourceCanvas.width;
+    canvas.height = sourceCanvas.height;
+
+    context.drawImage(sourceCanvas, 0, 0);
+
+    const imageData = context.getImageData(
+        0, 0, canvas.width, canvas.height
+    );
+
+    const pixels = imageData.data;
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Convert the image to grayscale.
+    const grayscale = new Uint8Array(width * height);
+
+    for (let i = 0, p = 0; i < pixels.length; i += 4, p++) {
+        grayscale[p] = Math.round(
+            0.299 * pixels[i] +
+            0.587 * pixels[i + 1] +
+            0.114 * pixels[i + 2]
+        );
+    }
+
+    // Find brightness percentiles for contrast adjustment.
+    const histogram = new Uint32Array(256);
+
+    for (let i = 0; i < grayscale.length; i++) {
+        histogram[grayscale[i]]++;
+    }
+
+    const totalPixels = grayscale.length;
+    const lowTarget = totalPixels * 0.01;
+    const highTarget = totalPixels * 0.99;
+
+    let cumulative = 0;
+    let low = 0;
+    let high = 255;
+
+    for (let i = 0; i < 256; i++) {
+        cumulative += histogram[i];
+
+        if (cumulative >= lowTarget) {
+            low = i;
+            break;
+        }
+    }
+
+    cumulative = 0;
+
+    for (let i = 0; i < 256; i++) {
+        cumulative += histogram[i];
+
+        if (cumulative >= highTarget) {
+            high = i;
+            break;
+        }
+    }
+
+    const range = Math.max(1, high - low);
+
+    // Apply contrast adjustment.
+    for (let i = 0; i < grayscale.length; i++) {
+        grayscale[i] = Math.max(
+            0,
+            Math.min(
+                255,
+                Math.round(
+                    ((grayscale[i] - low) / range) * 255
+                )
+            )
+        );
+    }
+
+    // Adaptive thresholding using local image regions.
+    // This helps when lighting varies across a photographed page.
+    const blockSize = 64;
+
+    for (let blockY = 0; blockY < height; blockY += blockSize) {
+        for (let blockX = 0; blockX < width; blockX += blockSize) {
+            const endX = Math.min(blockX + blockSize, width);
+            const endY = Math.min(blockY + blockSize, height);
+
+            let sum = 0;
+            let count = 0;
+
+            for (let y = blockY; y < endY; y++) {
+                for (let x = blockX; x < endX; x++) {
+                    sum += grayscale[y * width + x];
+                    count++;
+                }
+            }
+
+            const localAverage = sum / count;
+
+            const threshold = Math.max(
+                80,
+                Math.min(210, localAverage - 15)
+            );
+
+            for (let y = blockY; y < endY; y++) {
+                for (let x = blockX; x < endX; x++) {
+                    const index = y * width + x;
+                    const value = grayscale[index];
+                    const pixelIndex = index * 4;
+
+                    const output = value < threshold ? 0 : 255;
+
+                    pixels[pixelIndex] = output;
+                    pixels[pixelIndex + 1] = output;
+                    pixels[pixelIndex + 2] = output;
+                    pixels[pixelIndex + 3] = 255;
+                }
+            }
+        }
+    }
+
+    context.putImageData(imageData, 0, 0);
+
+    return canvas;
+}
+
+
+
+
+// PREPARE AND ENHANCE ORIGINAL IMAGE FOR FULL-PAGE OCR
 function preprocessImage(file) {
     return new Promise((resolve, reject) => {
         const image = new Image();
         const url = URL.createObjectURL(file);
 
         image.onload = function () {
-            const canvas = document.createElement("canvas");
-            const context = canvas.getContext("2d");
+            try {
+                const canvas = document.createElement("canvas");
+                const context = canvas.getContext("2d");
 
-            if (!context) {
+                if (!context) {
+                    throw new Error("Canvas is not supported.");
+                }
+
+                const sideways = rotation === 90 || rotation === 270;
+
+                canvas.width = sideways ? image.height : image.width;
+                canvas.height = sideways ? image.width : image.height;
+
+                context.translate(canvas.width / 2, canvas.height / 2);
+                context.rotate((rotation * Math.PI) / 180);
+
+                context.drawImage(
+                    image,
+                    -image.width / 2,
+                    -image.height / 2
+                );
+
                 URL.revokeObjectURL(url);
-                reject(new Error("Canvas is not supported."));
-                return;
+
+                const enhancedCanvas = enhanceCanvasForOCR(canvas);
+
+                resolve(enhancedCanvas);
+
+            } catch (error) {
+                URL.revokeObjectURL(url);
+                reject(error);
             }
-
-            const sideways = rotation === 90 || rotation === 270;
-
-            canvas.width = sideways ? image.height : image.width;
-            canvas.height = sideways ? image.width : image.height;
-
-            context.translate(canvas.width / 2, canvas.height / 2);
-            context.rotate((rotation * Math.PI) / 180);
-
-            context.drawImage(
-                image,
-                -image.width / 2,
-                -image.height / 2
-            );
-
-            URL.revokeObjectURL(url);
-            resolve(canvas);
         };
 
         image.onerror = function () {
@@ -364,6 +507,7 @@ function preprocessImage(file) {
         image.src = url;
     });
 }
+
 
 
 // REUSABLE OCR FUNCTION
@@ -489,7 +633,9 @@ extractSelectedButton.addEventListener("click", async function () {
             return;
         }
 
-        await performOCR(selectedCanvas);
+        const enhancedCanvas = enhanceCanvasForOCR(selectedCanvas);
+
+await performOCR(enhancedCanvas);
 
     } catch (error) {
         console.error(error);
